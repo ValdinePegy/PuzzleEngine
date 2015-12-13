@@ -14,6 +14,7 @@
 
 #include <array>
 #include <vector>
+#include "tools/Random.h"
 #include "Puzzle.h"
 
 namespace pze {
@@ -89,16 +90,58 @@ namespace pze {
       { 8, 15, 26 },  { 8, 16, 26 }, { 8, 17, 26 }   // Cells 78-80
     };
     
+    // Core puzzle info
     std::array<int,81> cells;         // What is the full solution?
     std::array<bool,81> start_cells;  // Is each cell visible at the start?
+
+    // Solve info
+    std::array<bool,81> found_cells;         // Has a cell been found yet?
+    std::array<int,81> opt_count;            // How many options can each cell have?
+    std::array<std::array<bool,9>, 81> opts; // Which options are available to each cell?
+
+    // A method to clear out all of the solution info when starting a new solve attempt.
+    void ClearSolveInfo() {
+      found_cells.fill(false);
+      opt_count.fill(9);
+      opts.fill({1,1,1, 1,1,1, 1,1,1});
+    }
+    
+    // An iterative step to randomize the state of the grid.
+    // Return whether a valid solution was involved.
+    bool RandomizeCells_step(emp::Random & random, int next) {
+      if (next == 81) return true;  // If we pass the end, we found a solution!
+
+      // Test possible states for this cell in random order.
+      std::vector<int> states( random.GetPermutation(9) );
+
+      // @CAO ACTUALLY DO TESTS HERE!!
+      
+      // If all states have failed, return false (this is a dead-end)
+      return false;
+    }
 
   public:
     Sudoku() {
       cells.fill(0);
       start_cells.fill(true);
     }
+    Sudoku(const Sudoku &) = default;
+    Sudoku(emp::Random & random, double start_prob=1.0) {
+      RandomizeCells(random);
+      RandomizeStart(random, start_prob);
+    }
     ~Sudoku() { ; }
 
+    void RandomizeCells(emp::Random & random) {
+      cells.fill(-1);                        // Clear out currents cells.
+      for (int i=0; i<9; i++) cells[i] = i;  // Setup first for to be 0-8.
+      RandomizeCells_step(random, 9);
+    }
+
+    void RandomizeStart(emp::Random & random, double start_prob=1.0) {
+      for (int i = 0; i < 81; i++) start_cells[i] = random.P(start_prob);
+    }
+    
     void Print(std::ostream & out=std::cout) {
       for (int id = 0; id < 81; id++) {
         if (id % 3 == 0) out << ' ';
