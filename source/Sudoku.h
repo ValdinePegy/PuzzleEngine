@@ -12,8 +12,8 @@
 #ifndef PZE_SUDOKU_H
 #define PZE_SUDOKU_H
 
+#include <array>
 #include <vector>
-#include "tools/BitSet.h"
 #include "Puzzle.h"
 
 namespace pze {
@@ -89,13 +89,24 @@ namespace pze {
       { 8, 15, 26 },  { 8, 16, 26 }, { 8, 17, 26 }   // Cells 78-80
     };
     
-    int cells[81];              // What is the final solution?
-    emp::BitSet<81> start_cell; // Is each cell visible in the starting layout?
+    std::array<int,81> cells;         // What is the full solution?
+    std::array<bool,81> start_cells;  // Is each cell visible at the start?
 
   public:
-    Sudoku() { ; }
+    Sudoku() {
+      cells.fill(0);
+      start_cells.fill(true);
+    }
     ~Sudoku() { ; }
 
+    void Print(std::ostream & out=std::cout) {
+      for (int id = 0; id < 81; id++) {
+        if (id % 3 == 0) out << ' ';
+        out << ' ' << cells[id];
+        if (id % 9 == 8) out << '\n';
+        if (id == 26 || id == 53) out << '\n';
+      }
+    }
   };
 }
 
