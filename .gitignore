@@ -1,0 +1,10 @@
+*~
+a.out
+a.out.js
+*.dSYM
+*.js.mem
+*.map
+*.o
+*.pyc
+tmp/
+PuzzleEngine
