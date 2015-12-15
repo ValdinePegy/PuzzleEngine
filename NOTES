@@ -1,0 +1,14 @@
+Next steps:
+* Finsih sudoku setup
+* Build sudoku solver rules (For 1&2)
+* Build generic solver that taps into sudoku solver rules
+* Build EA to evolve simple puzzles
+* Add more sudoku rules
+* Indenitfy a full set of objectives and limited resources
+* Build a lexicase selection
+* Hook into Empirical for user interface
+
+
+Fixes needed:
+* Sudoku initialization with random values isn't working right.
+
