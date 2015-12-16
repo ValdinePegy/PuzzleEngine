@@ -19,9 +19,17 @@
 #include "Puzzle.h"
 
 namespace pze {
-  struct SudokuMove : public PuzzleMove {
+  class SudokuMove : public PuzzleMove {
+  private:
     int cell_id;
     int state;
+
+  public:
+    SudokuMove() { ; }
+    ~SudokuMove() { ; }
+
+    int GetID() const override { return cell_id; }
+    int GetState() const override { return state; }
   };
   
   class Sudoku : public Puzzle {

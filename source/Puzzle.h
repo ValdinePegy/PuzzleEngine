@@ -12,9 +12,25 @@
 
 namespace pze {
 
-  struct PuzzleMove {
-  };
+  class PuzzleMove {
+  public:
+    enum MoveType {
+      LOCK_STATE,
+      REMOVE_OPTION
+    };
 
+  private:
+    MoveType type;
+
+  public:
+    PuzzleMove() { ; }
+    virtual ~PuzzleMove() { ; }
+
+    MoveType GetType() const { return type; }
+    virtual int GetState() const = 0;
+    virtual int GetID() const = 0;
+  };
+ 
   class Puzzle {
   public:
     Puzzle() { ; }
