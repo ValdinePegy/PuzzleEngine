@@ -12,6 +12,9 @@
 
 namespace pze {
 
+  struct PuzzleMove {
+  };
+
   class Puzzle {
   public:
     Puzzle() { ; }

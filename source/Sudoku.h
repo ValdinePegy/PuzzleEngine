@@ -19,6 +19,11 @@
 #include "Puzzle.h"
 
 namespace pze {
+  struct SudokuMove : public PuzzleMove {
+    int cell_id;
+    int state;
+  };
+  
   class Sudoku : public Puzzle {
   private:
     // "members" tracks which cell ids are members of each region.
@@ -132,7 +137,6 @@ namespace pze {
 
   public:
     Sudoku() {
-      // cells.fill(0);
       cells = { 0,1,2, 3,4,5, 6,7,8, 
                 5,7,4, 6,0,8, 1,2,3, 
                 3,8,6, 1,7,2, 0,5,4, 
