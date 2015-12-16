@@ -14,6 +14,7 @@
 
 #include <array>
 #include <vector>
+#include "tools/assert.h"
 #include "tools/Random.h"
 #include "Puzzle.h"
 
@@ -95,15 +96,24 @@ namespace pze {
     std::array<bool,81> start_cells;  // Is each cell visible at the start?
 
     // Solve info
-    std::array<bool,81> found_cells;         // Has a cell been found yet?
-    std::array<int,81> opt_count;            // How many options can each cell have?
-    std::array<std::array<bool,9>, 81> opts; // Which options are available to each cell?
+    std::array<bool,81> solve_found;               // Has a cell been found yet?
+    std::array<int,81> solve_opt_count;            // How many options does each cell have?
+    std::array<std::array<bool,9>, 81> solve_opts; // Which options are available to each cell?
 
     // A method to clear out all of the solution info when starting a new solve attempt.
-    void ClearSolveInfo() {
-      found_cells.fill(false);
-      opt_count.fill(9);
-      opts.fill({1,1,1, 1,1,1, 1,1,1});
+    void Solve_ClearInfo() {
+      solve_found.fill(false);
+      solve_opt_count.fill(9);
+      solve_opts.fill({1,1,1, 1,1,1, 1,1,1});
+    }
+
+    void Solve_SetOpt(int cell, int state) {
+      emp_assert(cells[cell] == state);            // Make sure state is correct!
+      emp_assert(solve_opts[cell][state] == true); // Make sure state is allowed.
+      solve_found[cell] = true;                    // Mark found!
+      solve_opt_count[cell] = 1;                   // This is the only option now.
+      solve_opts[cell] = {0,0,0,0,0,0,0,0,0};
+      solve_opts[cell][state] = 1;
     }
     
     // An iterative step to randomize the state of the grid.
@@ -122,7 +132,18 @@ namespace pze {
 
   public:
     Sudoku() {
-      cells.fill(0);
+      // cells.fill(0);
+      cells = { 0,1,2, 3,4,5, 6,7,8, 
+                5,7,4, 6,0,8, 1,2,3, 
+                3,8,6, 1,7,2, 0,5,4, 
+                8,2,0, 7,3,6, 4,1,5, 
+                1,5,3, 8,2,4, 7,6,0, 
+                6,4,7, 0,5,1, 3,8,2, 
+                7,0,1, 5,8,3, 2,4,6, 
+                4,6,5, 2,1,0, 8,3,7, 
+                2,3,8, 4,6,7, 5,0,1
+      };
+
       start_cells.fill(true);
     }
     Sudoku(const Sudoku &) = default;
@@ -133,9 +154,82 @@ namespace pze {
     ~Sudoku() { ; }
 
     void RandomizeCells(emp::Random & random) {
-      cells.fill(-1);                        // Clear out currents cells.
-      for (int i=0; i<9; i++) cells[i] = i;  // Setup first for to be 0-8.
+      cells.fill(-1);                        // Clear out current cells
+      Solve_ClearInfo();                     // Clear out helper info
+      for (int i=0; i<9; i++) {              // Setup first cells to be 0-8
+        cells[i] = i;                        //   set cur cell id
+        solve_opts[i].fill(false);           //   cross out most options
+        solve_opts[i][i] = true;             //   ...except the one chosen.
+        for (int r : regions[i]) {           //   loop through all regions for this cell
+          for (int c : members[r]) {         //     loop through other cells in each region
+            if (i==c) continue;              //       ignore current cell
+            if (solve_opts[c][i]) {          //       if new value was previously okay...
+              solve_opt_count[c]--;          //         note that one fewer option is available
+              solve_opts[c][i] = false;      //         and mark off the option
+            }
+          }
+        }
+      }
       RandomizeCells_step(random, 9);
+    }
+
+    // Shuffle will:
+    // * Remap all symbols
+    // * Shuffle rows/columns within sets of three
+    // * Shuffle rows/columns OF sets of three
+    void Shuffle(emp::Random & random) {
+      // Remap all states.
+      std::vector<int> remap( random.GetPermutation(9) );
+      for (int & c : cells) c = remap[c];
+
+      // Shuffle rows
+      std::vector<int> row_blockset_map( random.GetPermutation(3) );
+      std::vector<int> row_block0_map( random.GetPermutation(3) );
+      std::vector<int> row_block1_map( random.GetPermutation(3) );
+      std::vector<int> row_block2_map( random.GetPermutation(3) );
+      std::array<int, 9> row_map;
+      row_map[0] = row_blockset_map[0]*3 + row_block0_map[0];
+      row_map[1] = row_blockset_map[0]*3 + row_block0_map[1];
+      row_map[2] = row_blockset_map[0]*3 + row_block0_map[2];
+      row_map[3] = row_blockset_map[1]*3 + row_block1_map[0];
+      row_map[4] = row_blockset_map[1]*3 + row_block1_map[1];
+      row_map[5] = row_blockset_map[1]*3 + row_block1_map[2];
+      row_map[6] = row_blockset_map[2]*3 + row_block2_map[0];
+      row_map[7] = row_blockset_map[2]*3 + row_block2_map[1];
+      row_map[8] = row_blockset_map[2]*3 + row_block2_map[2];
+
+      std::array<int, 81> tmp_cells;
+      std::array<bool, 81> tmp_start;
+      for (int r = 0; r < 9; r++) {
+        for (int c = 0; c < 9; c++) {
+          tmp_cells[r*9 + c] = cells[row_map[r]*9 + c];
+          tmp_start[r*9 + c] = start_cells[row_map[r]*9 + c];
+        }
+      }
+
+      // Shuffle cols
+      std::vector<int> col_blockset_map( random.GetPermutation(3) );
+      std::vector<int> col_block0_map( random.GetPermutation(3) );
+      std::vector<int> col_block1_map( random.GetPermutation(3) );
+      std::vector<int> col_block2_map( random.GetPermutation(3) );
+      std::array<int, 9> col_map;
+      col_map[0] = col_blockset_map[0]*3 + col_block0_map[0];
+      col_map[1] = col_blockset_map[0]*3 + col_block0_map[1];
+      col_map[2] = col_blockset_map[0]*3 + col_block0_map[2];
+      col_map[3] = col_blockset_map[1]*3 + col_block1_map[0];
+      col_map[4] = col_blockset_map[1]*3 + col_block1_map[1];
+      col_map[5] = col_blockset_map[1]*3 + col_block1_map[2];
+      col_map[6] = col_blockset_map[2]*3 + col_block2_map[0];
+      col_map[7] = col_blockset_map[2]*3 + col_block2_map[1];
+      col_map[8] = col_blockset_map[2]*3 + col_block2_map[2];
+
+      for (int r = 0; r < 9; r++) {
+        const int R = r*9;
+        for (int c = 0; c < 9; c++) {
+          cells[R + c] = tmp_cells[R + col_map[c]];
+          start_cells[R + c] = tmp_start[R + col_map[c]];
+        }
+      }
     }
 
     void RandomizeStart(emp::Random & random, double start_prob=1.0) {
