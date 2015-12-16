@@ -15,8 +15,8 @@ namespace pze {
   class PuzzleMove {
   public:
     enum MoveType {
-      LOCK_STATE,
-      REMOVE_OPTION
+      SET_STATE,
+      BLOCK_STATE
     };
 
   private:
@@ -30,11 +30,22 @@ namespace pze {
     virtual int GetState() const = 0;
     virtual int GetID() const = 0;
   };
- 
+
+
+  
   class Puzzle {
   public:
     Puzzle() { ; }
     virtual ~Puzzle() { ; }
+
+    virtual bool Move(const PuzzleMove & move) = 0;
+    bool Move(const std::vector<PuzzleMove> & moves) {
+      bool progress = false;
+      for (auto & move : moves) progress |= Move(move);
+      return progress;
+    }
+    
+    virtual void Print(std::ostream & out=std::cout) = 0;
   };
   
 }

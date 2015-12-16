@@ -31,6 +31,8 @@ namespace pze {
     int GetID() const override { return cell_id; }
     int GetState() const override { return state; }
   };
+
+  
   
   class Sudoku : public Puzzle {
   private:
@@ -103,7 +105,7 @@ namespace pze {
       { 8, 12, 25 },  { 8, 13, 25 }, { 8, 14, 25 },  // Cells 75-77
       { 8, 15, 26 },  { 8, 16, 26 }, { 8, 17, 26 }   // Cells 78-80
     };
-    
+
     // Core puzzle info
     std::array<int,81> cells;         // What is the full solution?
     std::array<bool,81> start_cells;  // Is each cell visible at the start?
@@ -247,8 +249,35 @@ namespace pze {
     void RandomizeStart(emp::Random & random, double start_prob=1.0) {
       for (int i = 0; i < 81; i++) start_cells[i] = random.P(start_prob);
     }
+
+    bool Move(const PuzzleMove & move) override {
+      if (move.GetType() == PuzzleMove::SET_STATE) {
+        const int id = move.GetID();
+        emp_assert(move.GetState() == cells[id]); // Make sure we're setting the correct answer.
+        bool progress = !(solve_found[id]);
+        solve_found[id] = true;
+        solve_opt_count[id] = 1;
+        for (int i = 0; i < 9; i++) solve_opts[id][i] = (i == cells[id]);
+        return progress;
+      }
+      else if (move.GetType() == PuzzleMove::BLOCK_STATE) {
+        const int id = move.GetID();
+        const int state = move.GetState();
+        emp_assert(state != cells[id]); // Make sure we're not blocking the correct answer.
+        // If this value was previously an option, remove it.
+        if (solve_opts[id][state]) {
+          solve_opts[id][state] = false;
+          solve_opt_count[id]--;
+          return true;
+        }
+        return false;
+      }
+
+      emp_assert(false);   // One of the previous move options should have been triggered!
+      return false;
+    }
     
-    void Print(std::ostream & out=std::cout) {
+    void Print(std::ostream & out=std::cout) override {
       for (int id = 0; id < 81; id++) {
         if (id % 3 == 0) out << ' ';
         out << ' ' << cells[id];
