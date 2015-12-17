@@ -34,10 +34,52 @@ namespace pze {
 
 
 
-  struct SudokuState {
+  struct SudokuState : public PuzzleState {
     std::array<bool,81> found_set;               // Has a cell been found yet?
     std::array<int,81> opt_count;                // How many options does each cell have?
     std::array<std::array<bool,9>, 81> options;  // Which options are available to each cell?
+
+    // A method to clear out all of the solution info when starting a new solve attempt.
+    void Clear() override {
+      found_set.fill(false);
+      opt_count.fill(9);
+      options.fill({1,1,1, 1,1,1, 1,1,1});
+    }
+
+    void Set(int cell, int state) {
+      emp_assert(options[cell][state] == true);  // Make sure state is allowed.
+      found_set[cell] = true;                    // Mark found!
+      opt_count[cell] = 1;                       // This is the only option now.
+      options[cell] = {0,0,0,0,0,0,0,0,0};
+      options[cell][state] = 1;
+    }
+
+    bool Move(const PuzzleMove & move) override {
+      if (move.GetType() == PuzzleMove::SET_STATE) {
+        const int id = move.GetID();
+        bool progress = !(found_set[id]);
+        found_set[id] = true;
+        opt_count[id] = 1;
+        for (int i = 0; i < 9; i++) options[id][i] = (i == move.GetState());
+        return progress;
+      }
+      else if (move.GetType() == PuzzleMove::BLOCK_STATE) {
+        const int id = move.GetID();
+        const int state = move.GetState();
+        
+        if (options[id][state]) { // If this value was previously an option, remove it.
+          options[id][state] = false;
+          opt_count[id]--;
+          return true;
+        }
+        return false;
+      }
+
+      emp_assert(false);   // One of the previous move options should have been triggered!
+      return false;
+    }
+    
+
   };
 
   
@@ -119,23 +161,8 @@ namespace pze {
     std::array<bool,81> start_cells;  // Is each cell visible at the start?
 
     // Solve info
-    SudokuState solve;
+    SudokuState solve;                // Current solve state.
 
-    // A method to clear out all of the solution info when starting a new solve attempt.
-    void Solve_ClearInfo() {
-      solve.found_set.fill(false);
-      solve.opt_count.fill(9);
-      solve.options.fill({1,1,1, 1,1,1, 1,1,1});
-    }
-
-    void Solve_SetOpt(int cell, int state) {
-      emp_assert(cells[cell] == state);            // Make sure state is correct!
-      emp_assert(solve.options[cell][state] == true); // Make sure state is allowed.
-      solve.found_set[cell] = true;                    // Mark found!
-      solve.opt_count[cell] = 1;                   // This is the only option now.
-      solve.options[cell] = {0,0,0,0,0,0,0,0,0};
-      solve.options[cell][state] = 1;
-    }
     
     // An iterative step to randomize the state of the grid.
     // Return whether a valid solution was involved.
@@ -175,7 +202,7 @@ namespace pze {
 
     void RandomizeCells(emp::Random & random) {
       cells.fill(-1);                        // Clear out current cells
-      Solve_ClearInfo();                     // Clear out helper info
+      solve.Clear();                     // Clear out helper info
       for (int i=0; i<9; i++) {              // Setup first cells to be 0-8
         cells[i] = i;                        //   set cur cell id
         solve.options[i].fill(false);           //   cross out most options
@@ -256,33 +283,6 @@ namespace pze {
       for (int i = 0; i < 81; i++) start_cells[i] = random.P(start_prob);
     }
 
-    bool Move(const PuzzleMove & move) override {
-      if (move.GetType() == PuzzleMove::SET_STATE) {
-        const int id = move.GetID();
-        emp_assert(move.GetState() == cells[id]); // Make sure we're setting the correct answer.
-        bool progress = !(solve.found_set[id]);
-        solve.found_set[id] = true;
-        solve.opt_count[id] = 1;
-        for (int i = 0; i < 9; i++) solve.options[id][i] = (i == cells[id]);
-        return progress;
-      }
-      else if (move.GetType() == PuzzleMove::BLOCK_STATE) {
-        const int id = move.GetID();
-        const int state = move.GetState();
-        emp_assert(state != cells[id]); // Make sure we're not blocking the correct answer.
-        // If this value was previously an option, remove it.
-        if (solve.options[id][state]) {
-          solve.options[id][state] = false;
-          solve.opt_count[id]--;
-          return true;
-        }
-        return false;
-      }
-
-      emp_assert(false);   // One of the previous move options should have been triggered!
-      return false;
-    }
-    
     void Print(std::ostream & out=std::cout) override {
       for (int id = 0; id < 81; id++) {
         if (id % 3 == 0) out << ' ';

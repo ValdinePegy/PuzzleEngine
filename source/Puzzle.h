@@ -32,19 +32,27 @@ namespace pze {
   };
 
 
+  class PuzzleState {
+  public:
+    PuzzleState() { ; }
+    virtual ~PuzzleState() { ; }
+
+    virtual void Clear() { ; }
+    virtual void Set(int, int) { ; }
+    virtual bool Move(const PuzzleMove &) { return false; }
+    bool Move(const std::vector<PuzzleMove> & moves) {
+      bool progress = false;
+      for (auto & move : moves) progress |= Move(move);
+      return progress;
+    }
+  };
+
   
   class Puzzle {
   public:
     Puzzle() { ; }
     virtual ~Puzzle() { ; }
 
-    virtual bool Move(const PuzzleMove & move) = 0;
-    bool Move(const std::vector<PuzzleMove> & moves) {
-      bool progress = false;
-      for (auto & move : moves) progress |= Move(move);
-      return progress;
-    }
-    
     virtual void Print(std::ostream & out=std::cout) = 0;
   };
   
