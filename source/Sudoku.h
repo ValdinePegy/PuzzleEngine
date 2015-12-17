@@ -32,6 +32,14 @@ namespace pze {
     int GetState() const override { return state; }
   };
 
+
+
+  struct SudokuState {
+    std::array<bool,81> found_set;               // Has a cell been found yet?
+    std::array<int,81> opt_count;                // How many options does each cell have?
+    std::array<std::array<bool,9>, 81> options;  // Which options are available to each cell?
+  };
+
   
   
   class Sudoku : public Puzzle {
@@ -111,24 +119,22 @@ namespace pze {
     std::array<bool,81> start_cells;  // Is each cell visible at the start?
 
     // Solve info
-    std::array<bool,81> solve_found;               // Has a cell been found yet?
-    std::array<int,81> solve_opt_count;            // How many options does each cell have?
-    std::array<std::array<bool,9>, 81> solve_opts; // Which options are available to each cell?
+    SudokuState solve;
 
     // A method to clear out all of the solution info when starting a new solve attempt.
     void Solve_ClearInfo() {
-      solve_found.fill(false);
-      solve_opt_count.fill(9);
-      solve_opts.fill({1,1,1, 1,1,1, 1,1,1});
+      solve.found_set.fill(false);
+      solve.opt_count.fill(9);
+      solve.options.fill({1,1,1, 1,1,1, 1,1,1});
     }
 
     void Solve_SetOpt(int cell, int state) {
       emp_assert(cells[cell] == state);            // Make sure state is correct!
-      emp_assert(solve_opts[cell][state] == true); // Make sure state is allowed.
-      solve_found[cell] = true;                    // Mark found!
-      solve_opt_count[cell] = 1;                   // This is the only option now.
-      solve_opts[cell] = {0,0,0,0,0,0,0,0,0};
-      solve_opts[cell][state] = 1;
+      emp_assert(solve.options[cell][state] == true); // Make sure state is allowed.
+      solve.found_set[cell] = true;                    // Mark found!
+      solve.opt_count[cell] = 1;                   // This is the only option now.
+      solve.options[cell] = {0,0,0,0,0,0,0,0,0};
+      solve.options[cell][state] = 1;
     }
     
     // An iterative step to randomize the state of the grid.
@@ -172,14 +178,14 @@ namespace pze {
       Solve_ClearInfo();                     // Clear out helper info
       for (int i=0; i<9; i++) {              // Setup first cells to be 0-8
         cells[i] = i;                        //   set cur cell id
-        solve_opts[i].fill(false);           //   cross out most options
-        solve_opts[i][i] = true;             //   ...except the one chosen.
+        solve.options[i].fill(false);           //   cross out most options
+        solve.options[i][i] = true;             //   ...except the one chosen.
         for (int r : regions[i]) {           //   loop through all regions for this cell
           for (int c : members[r]) {         //     loop through other cells in each region
             if (i==c) continue;              //       ignore current cell
-            if (solve_opts[c][i]) {          //       if new value was previously okay...
-              solve_opt_count[c]--;          //         note that one fewer option is available
-              solve_opts[c][i] = false;      //         and mark off the option
+            if (solve.options[c][i]) {          //       if new value was previously okay...
+              solve.opt_count[c]--;          //         note that one fewer option is available
+              solve.options[c][i] = false;      //         and mark off the option
             }
           }
         }
@@ -254,10 +260,10 @@ namespace pze {
       if (move.GetType() == PuzzleMove::SET_STATE) {
         const int id = move.GetID();
         emp_assert(move.GetState() == cells[id]); // Make sure we're setting the correct answer.
-        bool progress = !(solve_found[id]);
-        solve_found[id] = true;
-        solve_opt_count[id] = 1;
-        for (int i = 0; i < 9; i++) solve_opts[id][i] = (i == cells[id]);
+        bool progress = !(solve.found_set[id]);
+        solve.found_set[id] = true;
+        solve.opt_count[id] = 1;
+        for (int i = 0; i < 9; i++) solve.options[id][i] = (i == cells[id]);
         return progress;
       }
       else if (move.GetType() == PuzzleMove::BLOCK_STATE) {
@@ -265,9 +271,9 @@ namespace pze {
         const int state = move.GetState();
         emp_assert(state != cells[id]); // Make sure we're not blocking the correct answer.
         // If this value was previously an option, remove it.
-        if (solve_opts[id][state]) {
-          solve_opts[id][state] = false;
-          solve_opt_count[id]--;
+        if (solve.options[id][state]) {
+          solve.options[id][state] = false;
+          solve.opt_count[id]--;
           return true;
         }
         return false;
