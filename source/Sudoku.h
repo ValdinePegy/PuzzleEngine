@@ -46,35 +46,31 @@ namespace pze {
       options.fill({1,1,1, 1,1,1, 1,1,1});
     }
 
-    void Set(int cell, int state) {
+    bool Set(int cell, int state) override {
       emp_assert(options[cell][state] == true);  // Make sure state is allowed.
+      bool progress = !(found_set[cell]);
       found_set[cell] = true;                    // Mark found!
       opt_count[cell] = 1;                       // This is the only option now.
       options[cell] = {0,0,0,0,0,0,0,0,0};
       options[cell][state] = 1;
+      return progress;
     }
 
+    bool Block(int cell, int state) override {
+      if (options[cell][state]) { // If this value was previously an option, remove it.
+        options[cell][state] = false;
+        opt_count[cell]--;
+        return true;
+      }
+      return false;
+    }
+    
     bool Move(const PuzzleMove & move) override {
-      if (move.GetType() == PuzzleMove::SET_STATE) {
-        const int id = move.GetID();
-        bool progress = !(found_set[id]);
-        found_set[id] = true;
-        opt_count[id] = 1;
-        for (int i = 0; i < 9; i++) options[id][i] = (i == move.GetState());
-        return progress;
+      switch (move.GetType()) {
+      case PuzzleMove::SET_STATE:   return Set(move.GetID(), move.GetState());
+      case PuzzleMove::BLOCK_STATE: return Block(move.GetID(), move.GetState());
       }
-      else if (move.GetType() == PuzzleMove::BLOCK_STATE) {
-        const int id = move.GetID();
-        const int state = move.GetState();
-        
-        if (options[id][state]) { // If this value was previously an option, remove it.
-          options[id][state] = false;
-          opt_count[id]--;
-          return true;
-        }
-        return false;
-      }
-
+      
       emp_assert(false);   // One of the previous move options should have been triggered!
       return false;
     }

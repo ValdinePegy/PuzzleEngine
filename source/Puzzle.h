@@ -38,7 +38,8 @@ namespace pze {
     virtual ~PuzzleState() { ; }
 
     virtual void Clear() { ; }
-    virtual void Set(int, int) { ; }
+    virtual bool Set(int, int) { return false; }
+    virtual bool Block(int, int) { return false; }
     virtual bool Move(const PuzzleMove &) { return false; }
     bool Move(const std::vector<PuzzleMove> & moves) {
       bool progress = false;
