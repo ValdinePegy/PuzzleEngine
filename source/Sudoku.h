@@ -35,21 +35,21 @@ namespace pze {
 
 
   struct SudokuState : public PuzzleState {
-    std::array<bool,81> found_set;               // Has a cell been found yet?
-    std::array<int,81> opt_count;                // How many options does each cell have?
+    std::array<char,81> value;                   // Known value for cells; -1 = unknown.
+    std::array<char,81> opt_count;               // How many options does each cell have?
     std::array<std::array<bool,9>, 81> options;  // Which options are available to each cell?
 
     // A method to clear out all of the solution info when starting a new solve attempt.
     void Clear() override {
-      found_set.fill(false);
+      value.fill(-1);
       opt_count.fill(9);
       options.fill({1,1,1, 1,1,1, 1,1,1});
     }
 
     bool Set(int cell, int state) override {
       emp_assert(options[cell][state] == true);  // Make sure state is allowed.
-      bool progress = !(found_set[cell]);
-      found_set[cell] = true;                    // Mark found!
+      bool progress = value[cell] == -1;
+      value[cell] = state;                       // Store found value!
       opt_count[cell] = 1;                       // This is the only option now.
       options[cell] = {0,0,0,0,0,0,0,0,0};
       options[cell][state] = 1;
