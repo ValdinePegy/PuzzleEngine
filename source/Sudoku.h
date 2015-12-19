@@ -40,56 +40,6 @@ namespace pze {
     std::array<char,81> opt_count;               // How many options does each cell have?
     std::array<std::array<bool,9>, 81> options;  // Which options are available to each cell?
 
-  public:
-    SudokuState() { ; }
-    SudokuState(const SudokuState &) = default;
-    ~SudokuState() { ; }
-
-    SudokuState& operator=(const SudokuState &) = default;
-    
-    // A method to clear out all of the solution info when starting a new solve attempt.
-    void Clear() override {
-      value.fill(-1);
-      opt_count.fill(9);
-      options.fill({1,1,1, 1,1,1, 1,1,1});
-    }
-
-    bool Set(int cell, int state) override {
-      emp_assert(options[cell][state] == true);  // Make sure state is allowed.
-      bool progress = value[cell] == -1;
-      value[cell] = state;                       // Store found value!
-      opt_count[cell] = 1;                       // This is the only option now.
-      options[cell] = {0,0,0,0,0,0,0,0,0};
-      options[cell][state] = 1;
-      return progress;
-    }
-
-    bool Block(int cell, int state) override {
-      if (options[cell][state]) { // If this value was previously an option, remove it.
-        options[cell][state] = false;
-        opt_count[cell]--;
-        return true;
-      }
-      return false;
-    }
-    
-    bool Move(const PuzzleMove & move) override {
-      switch (move.GetType()) {
-      case PuzzleMove::SET_STATE:   return Set(move.GetID(), move.GetState());
-      case PuzzleMove::BLOCK_STATE: return Block(move.GetID(), move.GetState());
-      }
-      
-      emp_assert(false);   // One of the previous move options should have been triggered!
-      return false;
-    }
-    
-
-  };
-
-  
-  
-  class Sudoku : public Puzzle {
-  private:
     // "members" tracks which cell ids are members of each region.
     static constexpr int members[27][9] = {
       // Rows
@@ -160,12 +110,59 @@ namespace pze {
       { 8, 15, 26 },  { 8, 16, 26 }, { 8, 17, 26 }   // Cells 78-80
     };
 
+  public:
+    SudokuState() { ; }
+    SudokuState(const SudokuState &) = default;
+    ~SudokuState() { ; }
+
+    SudokuState& operator=(const SudokuState &) = default;
+    
+    // A method to clear out all of the solution info when starting a new solve attempt.
+    void Clear() override {
+      value.fill(-1);
+      opt_count.fill(9);
+      options.fill({1,1,1, 1,1,1, 1,1,1});
+    }
+
+    bool Set(int cell, int state) override {
+      emp_assert(options[cell][state] == true);  // Make sure state is allowed.
+      bool progress = value[cell] == -1;
+      value[cell] = state;                       // Store found value!
+      opt_count[cell] = 1;                       // This is the only option now.
+      options[cell] = {0,0,0,0,0,0,0,0,0};
+      options[cell][state] = 1;
+      return progress;
+    }
+
+    bool Block(int cell, int state) override {
+      if (options[cell][state]) { // If this value was previously an option, remove it.
+        options[cell][state] = false;
+        opt_count[cell]--;
+        return true;
+      }
+      return false;
+    }
+    
+    bool Move(const PuzzleMove & move) override {
+      switch (move.GetType()) {
+      case PuzzleMove::SET_STATE:   return Set(move.GetID(), move.GetState());
+      case PuzzleMove::BLOCK_STATE: return Block(move.GetID(), move.GetState());
+      }
+      
+      emp_assert(false);   // One of the previous move options should have been triggered!
+      return false;
+    }
+    
+
+  };
+
+  
+  
+  class Sudoku : public Puzzle {
+  private:
     // Core puzzle info
     std::array<int,81> cells;         // What is the full solution?
     std::array<bool,81> start_cells;  // Is each cell visible at the start?
-
-    // Solve info
-    SudokuState solve;                // Current solve state.
 
     
     // An iterative step to randomize the state of the grid.
@@ -204,6 +201,14 @@ namespace pze {
     }
     ~Sudoku() { ; }
 
+    SudokuState GetState() {
+      SudokuState state;
+      for (int i = 0; i < 81; i++) {
+        if (start_cells[i]) state.Set(i, cells[i]);
+      }
+      return state;
+    }
+    
     void RandomizeCells(emp::Random & random) {
       // cells.fill(-1);                        // Clear out current cells
       // solve.Clear();                         // Clear out helper info
