@@ -34,11 +34,13 @@ namespace pze {
 
 
 
-  struct SudokuState : public PuzzleState {
+  class SudokuState : public PuzzleState {
+  private:
     std::array<char,81> value;                   // Known value for cells; -1 = unknown.
     std::array<char,81> opt_count;               // How many options does each cell have?
     std::array<std::array<bool,9>, 81> options;  // Which options are available to each cell?
 
+  public:
     // A method to clear out all of the solution info when starting a new solve attempt.
     void Clear() override {
       value.fill(-1);
