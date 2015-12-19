@@ -13,6 +13,7 @@
 #define PZE_SUDOKU_H
 
 #include <array>
+#include <set>
 #include <vector>
 #include "tools/assert.h"
 #include "tools/Random.h"
@@ -111,12 +112,31 @@ namespace pze {
     };
 
   public:
-    SudokuState() { ; }
+    SudokuState() { Clear(); }
     SudokuState(const SudokuState &) = default;
     ~SudokuState() { ; }
 
     SudokuState& operator=(const SudokuState &) = default;
     
+    // void PrintLinks() {
+    //   for (int i = 0; i < 81; i++) {
+    //     std::cout << "{ ";
+    //     std::set<int> links;
+    //     for (int r : regions[i]) {
+    //       for (int c : members[r]) {
+    //         if (c != i) links.insert(c);
+    //       }
+    //     }
+    //     bool first = true;
+    //     for (int c : links) {
+    //       if (!first) std::cout << ", ";
+    //       std::cout << c;
+    //       first = false;
+    //     }
+    //     std::cout << " }" << std::endl;
+    //   }
+    // }
+
     // A method to clear out all of the solution info when starting a new solve attempt.
     void Clear() override {
       value.fill(-1);

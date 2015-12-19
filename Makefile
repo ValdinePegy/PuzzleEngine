@@ -18,12 +18,14 @@ default: PuzzleEngine
 web: PuzzleEngine.js
 all: PuzzleEngine PuzzleEngine.js
 
-PuzzleEngine:	source/drivers/command_line.cc
-	$(CXX_nat) $(CFLAGS_nat) source/drivers/command_line.cc -o PuzzleEngine
+SRC	:= source/Sudoku.cc
+
+PuzzleEngine:	$(SRC) source/drivers/command_line.cc
+	$(CXX_nat) $(CFLAGS_nat) $(SRC) source/drivers/command_line.cc -o PuzzleEngine
 	@echo To build the web version use: make web
 
-PuzzleEngine.js: source/drivers/html.cc
-	$(CXX_web) $(CFLAGS_web) source/drivers/html.cc -o PuzzleEngine.js
+PuzzleEngine.js: $(SRC) source/drivers/html.cc
+	$(CXX_web) $(CFLAGS_web) $(SRC) source/drivers/html.cc -o PuzzleEngine.js
 
 clean:
 	rm -f PuzzleEngine PuzzleEngine.js *.js.map *~ source/*.o source/*/*.o
