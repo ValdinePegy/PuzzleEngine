@@ -41,6 +41,12 @@ namespace pze {
     std::array<std::array<bool,9>, 81> options;  // Which options are available to each cell?
 
   public:
+    SudokuState() { ; }
+    SudokuState(const SudokuState &) = default;
+    ~SudokuState() { ; }
+
+    SudokuState& operator=(const SudokuState &) = default;
+    
     // A method to clear out all of the solution info when starting a new solve attempt.
     void Clear() override {
       value.fill(-1);
@@ -199,23 +205,23 @@ namespace pze {
     ~Sudoku() { ; }
 
     void RandomizeCells(emp::Random & random) {
-      cells.fill(-1);                        // Clear out current cells
-      solve.Clear();                     // Clear out helper info
-      for (int i=0; i<9; i++) {              // Setup first cells to be 0-8
-        cells[i] = i;                        //   set cur cell id
-        solve.options[i].fill(false);           //   cross out most options
-        solve.options[i][i] = true;             //   ...except the one chosen.
-        for (int r : regions[i]) {           //   loop through all regions for this cell
-          for (int c : members[r]) {         //     loop through other cells in each region
-            if (i==c) continue;              //       ignore current cell
-            if (solve.options[c][i]) {          //       if new value was previously okay...
-              solve.opt_count[c]--;          //         note that one fewer option is available
-              solve.options[c][i] = false;      //         and mark off the option
-            }
-          }
-        }
-      }
-      RandomizeCells_step(random, 9);
+      // cells.fill(-1);                        // Clear out current cells
+      // solve.Clear();                         // Clear out helper info
+      // for (int i=0; i<9; i++) {              // Setup first cells to be 0-8
+      //   cells[i] = i;                        //   set cur cell id
+      //   solve.options[i].fill(false);        //   cross out most options
+      //   solve.options[i][i] = true;          //   ...except the one chosen.
+      //   for (int r : regions[i]) {           //   loop through all regions for this cell
+      //     for (int c : members[r]) {         //     loop through other cells in each region
+      //       if (i==c) continue;              //       ignore current cell
+      //       if (solve.options[c][i]) {       //       if new value was previously okay...
+      //         solve.opt_count[c]--;          //         note that one fewer option is available
+      //         solve.options[c][i] = false;   //         and mark off the option
+      //       }
+      //     }
+      //   }
+      // }
+      // RandomizeCells_step(random, 9);
     }
 
     // Shuffle will:
