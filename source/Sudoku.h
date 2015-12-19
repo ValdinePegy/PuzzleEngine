@@ -202,25 +202,6 @@ namespace pze {
 
     SudokuState& operator=(const SudokuState &) = default;
     
-    // void PrintLinks() {
-    //   for (int i = 0; i < 81; i++) {
-    //     std::cout << "{ ";
-    //     std::set<int> links;
-    //     for (int r : regions[i]) {
-    //       for (int c : members[r]) {
-    //         if (c != i) links.insert(c);
-    //       }
-    //     }
-    //     bool first = true;
-    //     for (int c : links) {
-    //       if (!first) std::cout << ", ";
-    //       std::cout << c;
-    //       first = false;
-    //     }
-    //     std::cout << " }" << std::endl;
-    //   }
-    // }
-
     // A method to clear out all of the solution info when starting a new solve attempt.
     void Clear() override {
       value.fill(-1);
@@ -258,6 +239,23 @@ namespace pze {
     }
     
 
+    void Print(std::ostream & out=std::cout) override {
+      for (int r = 0; r < 9; r++) {       // Puzzle row
+        for (int s = 0; s < 9; s+=3) {    // Suset row
+          for (int c = 0; c < 9; c++) {   // Puzzle col
+            int id = r*9+c;
+            out << "   " << (char) (options[id][s]  ? ('0' +s+1) : '.')
+                << " " << (char) (options[id][s+1] ? ('0' +s+2) : '.')
+                << " " << (char) (options[id][s+2] ? ('0' +s+3) : '.');
+          }
+          out << std::endl;
+        }
+        out << std::endl;
+      }
+      
+      
+    }
+    
   };
 
   

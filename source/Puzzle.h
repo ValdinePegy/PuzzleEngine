@@ -46,7 +46,9 @@ namespace pze {
       for (auto & move : moves) progress |= Move(move);
       return progress;
     }
-  };
+
+    virtual void Print(std::ostream & out=std::cout) = 0;
+};
 
   
   class Puzzle {
