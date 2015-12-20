@@ -294,7 +294,7 @@ namespace pze {
                 2,3,8, 4,6,7, 5,0,1
       };
 
-      start_cells.fill(true);
+      start_cells.fill(false);
     }
     Sudoku(const Sudoku &) = default;
     Sudoku(emp::Random & random, double start_prob=1.0) {
@@ -311,6 +311,10 @@ namespace pze {
       return state;
     }
     
+    void SetStart(int id, bool start_ok=true) {
+      start_cells[id] = start_ok;
+    }
+
     void RandomizeCells(emp::Random & random) {
       // cells.fill(-1);                        // Clear out current cells
       // solve.Clear();                         // Clear out helper info
