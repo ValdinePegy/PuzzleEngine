@@ -240,15 +240,25 @@ namespace pze {
     
 
     void Print(std::ostream & out=std::cout) override {
+      out << " +-----------------------+-----------------------+-----------------------+"
+          << std::endl;;
       for (int r = 0; r < 9; r++) {       // Puzzle row
-        for (int s = 0; s < 9; s+=3) {    // Suset row
+        for (int s = 0; s < 9; s+=3) {    // Subset row
           for (int c = 0; c < 9; c++) {   // Puzzle col
             int id = r*9+c;
-            out << "   " << (char) (options[id][s]  ? ('0' +s+1) : '.')
+            if (c%3==0) out << " |";
+            else out << "  ";
+            out << " " << (char) (options[id][s]  ? ('0' +s+1) : '.')
                 << " " << (char) (options[id][s+1] ? ('0' +s+2) : '.')
                 << " " << (char) (options[id][s+2] ? ('0' +s+3) : '.');
           }
-          out << std::endl;
+          out << " |" << std::endl;
+        }
+        if (r%3==2) {
+          out << " +-----------------------+-----------------------+-----------------------+";
+        }
+        else {
+          out << " |                       |                       |                       |";
         }
         out << std::endl;
       }
