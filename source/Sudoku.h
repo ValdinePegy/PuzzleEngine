@@ -216,6 +216,10 @@ namespace pze {
       opt_count[cell] = 1;                       // This is the only option now.
       options[cell] = {0,0,0,0,0,0,0,0,0};
       options[cell][state] = 1;
+
+      // Now make sure this state is blocked from all linked cells.
+      for (int id : links[cell]) Block(id, state);
+      
       return progress;
     }
 
