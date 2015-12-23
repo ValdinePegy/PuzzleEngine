@@ -13,6 +13,8 @@
 #define PZE_SUDOKU_H
 
 #include <array>
+#include <fstream>
+#include <istream>
 #include <set>
 #include <vector>
 #include "tools/assert.h"
@@ -315,6 +317,9 @@ namespace pze {
       RandomizeCells(random);
       RandomizeStart(random, start_prob);
     }
+    Sudoku(std::istream & is) { Load(is); }
+    Sudoku(const std::string & filename) { Load(filename); }
+    
     ~Sudoku() { ; }
 
     SudokuState GetState() {
@@ -329,6 +334,9 @@ namespace pze {
       start_cells[id] = start_ok;
     }
 
+    void Load(std::istream & is) { (void) is; }
+    void Load(const std::string & filename) { (void) filename; }
+    
     void RandomizeCells(emp::Random & random) {
       // cells.fill(-1);                        // Clear out current cells
       // solve.Clear();                         // Clear out helper info
