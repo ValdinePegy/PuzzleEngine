@@ -29,7 +29,7 @@ namespace pze {
     int state;
 
   public:
-    SudokuMove() { ; }
+    SudokuMove() = default;
     ~SudokuMove() { ; }
 
     int GetID() const override { return cell_id; }
@@ -37,13 +37,15 @@ namespace pze {
   };
 
 
+  class Sudoku;
 
   class SudokuState : public PuzzleState {
   private:
     std::array<char,81> value;                   // Known value for cells; -1 = unknown.
     std::array<char,81> opt_count;               // How many options does each cell have?
     std::array<std::array<bool,9>, 81> options;  // Which options are available to each cell?
-
+    const Sudoku * puzzle;                       // Pointer back to original puzzle.
+    
     // "members" tracks which cell ids are members of each region.
     static constexpr int members[27][9] = {
       // Rows
@@ -199,7 +201,8 @@ namespace pze {
     };
     
   public:
-    SudokuState() { Clear(); }
+    SudokuState(Sudoku * p) : puzzle(p) { Clear(); }
+    SudokuState(Sudoku & p) : puzzle(&p) { Clear(); }
     SudokuState(const SudokuState &) = default;
     ~SudokuState() { ; }
 

@@ -97,7 +97,7 @@ namespace pze {
 
   SudokuState Sudoku::GetState()
   {
-    SudokuState state;
+    SudokuState state(this);
     for (int i = 0; i < 81; i++) {
       if (start_cells[i]) state.Set(i, cells[i]);
     }
