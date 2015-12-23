@@ -206,76 +206,20 @@ namespace pze {
     SudokuState& operator=(const SudokuState &) = default;
     
     // A method to clear out all of the solution info when starting a new solve attempt.
-    void Clear() override {
-      value.fill(-1);
-      opt_count.fill(9);
-      options.fill({1,1,1, 1,1,1, 1,1,1});
-    }
+    void Clear() override;
 
-    bool Set(int cell, int state) override {
-      emp_assert(options[cell][state] == true);  // Make sure state is allowed.
-      bool progress = value[cell] == -1;
-      value[cell] = state;                       // Store found value!
-      opt_count[cell] = 1;                       // This is the only option now.
-      options[cell] = {0,0,0,0,0,0,0,0,0};
-      options[cell][state] = 1;
+    // Set an individual cell in the current state; remove option from linked cells.
+    bool Set(int cell, int state) override;
 
-      // Now make sure this state is blocked from all linked cells.
-      for (int id : links[cell]) Block(id, state);
-      
-      return progress;
-    }
+    // Remove a symbol option from a particular cell.
+    bool Block(int cell, int state) override;
 
-    bool Block(int cell, int state) override {
-      if (options[cell][state]) { // If this value was previously an option, remove it.
-        options[cell][state] = false;
-        opt_count[cell]--;
-        return true;
-      }
-      return false;
-    }
-    
-    bool Move(const PuzzleMove & move) override {
-      switch (move.GetType()) {
-      case PuzzleMove::SET_STATE:   return Set(move.GetID(), move.GetState());
-      case PuzzleMove::BLOCK_STATE: return Block(move.GetID(), move.GetState());
-      }
-      
-      emp_assert(false);   // One of the previous move options should have been triggered!
-      return false;
-    }
-    
+    // Operate on a "move" object.
+    bool Move(const PuzzleMove & move) override;
 
-    void Print(const std::array<char,9> & char_map, std::ostream & out=std::cout) {
-      out << " +-----------------------+-----------------------+-----------------------+"
-          << std::endl;;
-      for (int r = 0; r < 9; r++) {       // Puzzle row
-        for (int s = 0; s < 9; s+=3) {    // Subset row
-          for (int c = 0; c < 9; c++) {   // Puzzle col
-            int id = r*9+c;
-            if (c%3==0) out << " |";
-            else out << "  ";
-            out << " " << (char) (options[id][s]  ? char_map[s] : '.')
-                << " " << (char) (options[id][s+1] ? char_map[s+1] : '.')
-                << " " << (char) (options[id][s+2] ? char_map[s+2] : '.');
-          }
-          out << " |" << std::endl;
-        }
-        if (r%3==2) {
-          out << " +-----------------------+-----------------------+-----------------------+";
-        }
-        else {
-          out << " |                       |                       |                       |";
-        }
-        out << std::endl;
-      }
-    }
-    
-    void Print(std::ostream & out=std::cout) override {
-      // If no character map is provided, use default for Sudoku
-      std::array<char,9> char_map = {'1', '2', '3', '4', '5', '6', '7', '8', '9'};
-      Print(char_map, out);
-    }
+    // Print the current state of the puzzle, including all options available.
+    void Print(const std::array<char,9> & symbols, std::ostream & out=std::cout);
+    void Print(std::ostream & out=std::cout) override;
   };
 
   
@@ -285,7 +229,7 @@ namespace pze {
     // Core puzzle info
     std::array<int,81> cells;         // What is the full solution?
     std::array<bool,81> start_cells;  // Is each cell visible at the start?
-    std::array<char, 9> char_map;     // What symbols are used in this puzzle?
+    std::array<char, 9> symbols;     // What symbols are used in this puzzle?
     
     // An iterative step to randomize the state of the grid.
     // Return whether a valid solution was involved.
@@ -326,6 +270,9 @@ namespace pze {
     
     ~Sudoku() { ; }
 
+    const std::array<int,81> & GetCells() const { return cells; }
+    const std::array<bool,81> & GtStartCells() const { return start_cells; }
+    const std::array<char,9> & GetSymbolas() const { return symbols; }
     SudokuState GetState();
     
     void SetStart(int id, bool start_ok=true) { start_cells[id] = start_ok; }
@@ -339,10 +286,8 @@ namespace pze {
     
     void RandomizeCells(emp::Random & random);
 
-    // Shuffle will:
-    // * Remap all symbols
-    // * Shuffle rows/columns within sets of three
-    // * Shuffle rows/columns OF sets of three
+    // Shuffle will reorganize the board changing symbols and row/column order, but
+    // otherwise keep the core nature of the puzzle the same.
     void Shuffle(emp::Random & random);
 
     void RandomizeStart(emp::Random & random, double start_prob=1.0);

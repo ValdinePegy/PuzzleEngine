@@ -8,6 +8,88 @@ namespace pze {
   constexpr int SudokuState::members[27][9];
   constexpr int SudokuState::regions[81][3];
   constexpr int SudokuState::links[81][20];
+                                       
+  // A method to clear out all of the solution info when starting a new solve attempt.
+  void SudokuState::Clear()
+  {
+    value.fill(-1);
+    opt_count.fill(9);
+    options.fill({1,1,1, 1,1,1, 1,1,1});
+  }
+  
+  // Set an individual cell in the current state; remove option from linked cells.
+  bool SudokuState::Set(int cell, int state)
+  {
+    emp_assert(options[cell][state] == true);  // Make sure state is allowed.
+    bool progress = value[cell] == -1;
+    value[cell] = state;                       // Store found value!
+    opt_count[cell] = 1;                       // This is the only option now.
+    options[cell] = {0,0,0,0,0,0,0,0,0};
+    options[cell][state] = 1;
+    
+    // Now make sure this state is blocked from all linked cells.
+    for (int id : links[cell]) Block(id, state);
+      
+    return progress;
+  }
+
+  // Remove a symbol option from a particular cell.
+  bool SudokuState::Block(int cell, int state)
+  {
+    if (options[cell][state]) { // If this value was previously an option, remove it.
+      options[cell][state] = false;
+      opt_count[cell]--;
+      return true;
+    }
+    return false;
+  }
+
+  // Operate on a "move" object.
+  bool SudokuState::Move(const PuzzleMove & move)
+  {
+    switch (move.GetType()) {
+    case PuzzleMove::SET_STATE:   return Set(move.GetID(), move.GetState());
+    case PuzzleMove::BLOCK_STATE: return Block(move.GetID(), move.GetState());
+    }
+    
+    emp_assert(false);   // One of the previous move options should have been triggered!
+    return false;
+  }
+  
+
+  // Print the current state of the puzzle, including all options available.
+  void SudokuState::Print(const std::array<char,9> & symbols, std::ostream & out)
+  {
+    out << " +-----------------------+-----------------------+-----------------------+"
+        << std::endl;;
+    for (int r = 0; r < 9; r++) {       // Puzzle row
+      for (int s = 0; s < 9; s+=3) {    // Subset row
+        for (int c = 0; c < 9; c++) {   // Puzzle col
+          int id = r*9+c;
+          if (c%3==0) out << " |";
+          else out << "  ";
+          out << " " << (char) (options[id][s]  ? symbols[s] : '.')
+              << " " << (char) (options[id][s+1] ? symbols[s+1] : '.')
+              << " " << (char) (options[id][s+2] ? symbols[s+2] : '.');
+        }
+        out << " |" << std::endl;
+      }
+      if (r%3==2) {
+        out << " +-----------------------+-----------------------+-----------------------+";
+      }
+      else {
+        out << " |                       |                       |                       |";
+      }
+      out << std::endl;
+    }
+  }
+    
+  void SudokuState::Print(std::ostream & out)
+  {
+    // If no character map is provided, use default for Sudoku
+    std::array<char,9> symbols = {'1', '2', '3', '4', '5', '6', '7', '8', '9'};
+    Print(symbols, out);
+  }
   
 
   ////////////////////
