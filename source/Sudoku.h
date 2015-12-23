@@ -19,6 +19,7 @@
 #include <vector>
 #include "tools/assert.h"
 #include "tools/Random.h"
+#include "tools/string_utils.h"
 #include "Puzzle.h"
 
 namespace pze {
@@ -334,8 +335,29 @@ namespace pze {
       start_cells[id] = start_ok;
     }
 
-    void Load(std::istream & is) { (void) is; }
-    void Load(const std::string & filename) { (void) filename; }
+    bool Load(std::istream & is) {
+      int load_count = 0;
+      char cur_char;
+      while (load_count < 81) {
+        is >> cur_char;
+
+        // If this is whitespace, keep going.
+        if (emp::is_whitespace(cur_char)) continue;
+
+        // Otherwise load this character into the tables.
+        cells[load_count] = (cur_char == '-' ? -1 : (cur_char - '0'));
+        start_cells[load_count] = (cur_char != '-');
+    
+        load_count++;
+      }
+
+      return true;
+    }
+
+    bool Load(const std::string & filename) {
+      std::ifstream f(filename);
+      return Load(f);
+    }
     
     void RandomizeCells(emp::Random & random) {
       // cells.fill(-1);                        // Clear out current cells
