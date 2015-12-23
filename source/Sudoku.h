@@ -246,7 +246,7 @@ namespace pze {
     }
     
 
-    void Print(std::ostream & out=std::cout) override {
+    void Print(const std::vector<char> & char_map, std::ostream & out=std::cout) {
       out << " +-----------------------+-----------------------+-----------------------+"
           << std::endl;;
       for (int r = 0; r < 9; r++) {       // Puzzle row
@@ -255,9 +255,9 @@ namespace pze {
             int id = r*9+c;
             if (c%3==0) out << " |";
             else out << "  ";
-            out << " " << (char) (options[id][s]  ? ('0' +s+1) : '.')
-                << " " << (char) (options[id][s+1] ? ('0' +s+2) : '.')
-                << " " << (char) (options[id][s+2] ? ('0' +s+3) : '.');
+            out << " " << (char) (options[id][s]  ? char_map[s] : '.')
+                << " " << (char) (options[id][s+1] ? char_map[s+1] : '.')
+                << " " << (char) (options[id][s+2] ? char_map[s+2] : '.');
           }
           out << " |" << std::endl;
         }
@@ -269,10 +269,12 @@ namespace pze {
         }
         out << std::endl;
       }
-      
-      
     }
     
+    void Print(std::ostream & out=std::cout) override {
+      std::vector<char> char_map = {'1', '2', '3', '4', '5', '6', '7', '8', '9'};
+      Print(char_map, out);
+    }
   };
 
   
