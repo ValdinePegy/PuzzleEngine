@@ -246,7 +246,7 @@ namespace pze {
     }
     
 
-    void Print(const std::vector<char> & char_map, std::ostream & out=std::cout) {
+    void Print(const std::array<char,9> & char_map, std::ostream & out=std::cout) {
       out << " +-----------------------+-----------------------+-----------------------+"
           << std::endl;;
       for (int r = 0; r < 9; r++) {       // Puzzle row
@@ -272,7 +272,8 @@ namespace pze {
     }
     
     void Print(std::ostream & out=std::cout) override {
-      std::vector<char> char_map = {'1', '2', '3', '4', '5', '6', '7', '8', '9'};
+      // If no character map is provided, use default for Sudoku
+      std::array<char,9> char_map = {'1', '2', '3', '4', '5', '6', '7', '8', '9'};
       Print(char_map, out);
     }
   };
@@ -284,7 +285,7 @@ namespace pze {
     // Core puzzle info
     std::array<int,81> cells;         // What is the full solution?
     std::array<bool,81> start_cells;  // Is each cell visible at the start?
-
+    std::array<char, 9> char_map;     // What symbols are used in this puzzle?
     
     // An iterative step to randomize the state of the grid.
     // Return whether a valid solution was involved.
