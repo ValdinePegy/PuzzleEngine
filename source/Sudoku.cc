@@ -87,8 +87,9 @@ namespace pze {
   void SudokuState::Print(std::ostream & out)
   {
     // If no character map is provided, use default for Sudoku
-    std::array<char,9> symbols = {'1', '2', '3', '4', '5', '6', '7', '8', '9'};
-    Print(symbols, out);
+    // std::array<char,9> symbols = {'1', '2', '3', '4', '5', '6', '7', '8', '9'};
+    // Print(symbols, out);
+    Print(puzzle->GetSymbols(), out);
   }
   
 

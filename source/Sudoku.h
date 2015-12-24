@@ -275,7 +275,7 @@ namespace pze {
 
     const std::array<int,81> & GetCells() const { return cells; }
     const std::array<bool,81> & GtStartCells() const { return start_cells; }
-    const std::array<char,9> & GetSymbolas() const { return symbols; }
+    const std::array<char,9> & GetSymbols() const { return symbols; }
     SudokuState GetState();
     
     void SetStart(int id, bool start_ok=true) { start_cells[id] = start_ok; }
