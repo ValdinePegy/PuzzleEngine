@@ -106,6 +106,12 @@ namespace pze {
     
   bool Sudoku::Load(std::istream & is)
   {
+    symbols.fill(0);              // Reset all symbols used.
+    std::array<int, 128> sym_id;  // Which id is associated with each symbol?
+    sym_id.fill(-2);
+    sym_id['-'] = -1;             // A dash should be used as an empty cell.
+    int sym_count = 0;            // How many unique symbols have we seen?
+    
     int load_count = 0;
     char cur_char;
     while (load_count < 81) {
@@ -113,10 +119,18 @@ namespace pze {
       
       // If this is whitespace, keep going.
       if (emp::is_whitespace(cur_char)) continue;
+
+      int cur_id = sym_id[cur_char];
+      if (cur_id <= -2) {                 // If this symbol wasn't found...
+        if (sym_count >= 9) return false; //  Make sure we have room for another ID
+        cur_id = sym_count++;             //  Determine the new ID for this character.
+        symbols[cur_id] = cur_char;       //  Store this character
+        sym_id[cur_char] = cur_id;        //  Store the new ID
+      }
       
       // Otherwise load this character into the tables.
-      cells[load_count] = (cur_char == '-' ? -1 : (cur_char - '0'));
-      start_cells[load_count] = (cur_char != '-');
+      cells[load_count] = cur_id;              // Store the current ID.
+      start_cells[load_count] = (cur_id >= 0); // Any non-empty cell should be a start state.
       
       load_count++;
     }
