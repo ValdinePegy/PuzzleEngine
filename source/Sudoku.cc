@@ -68,9 +68,18 @@ namespace pze {
           int id = r*9+c;
           if (c%3==0) out << " |";
           else out << "  ";
-          out << " " << (char) (options[id][s]  ? symbols[s] : '.')
-              << " " << (char) (options[id][s+1] ? symbols[s+1] : '.')
-              << " " << (char) (options[id][s+2] ? symbols[s+2] : '.');
+          if (value[id] == -1) {
+            out << " " << (char) (options[id][s]  ? symbols[s] : '.')
+                << " " << (char) (options[id][s+1] ? symbols[s+1] : '.')
+                << " " << (char) (options[id][s+2] ? symbols[s+2] : '.');
+          } else {
+            if (s==0) out << "      ";
+            if (s==3) out << "   " << symbols[value[id]] << "  ";
+            if (s==6) out << "      ";
+            // if (s==0) out << " /   \\";
+            // if (s==3) out << " | " << symbols[value[id]] << " |";
+            // if (s==6) out << " \\   /";
+          }
         }
         out << " |" << std::endl;
       }
