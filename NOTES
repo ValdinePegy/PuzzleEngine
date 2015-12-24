@@ -1,5 +1,10 @@
 Next steps:
 * Finsih sudoku setup
+  - Make sure symbols are used
+  - Make printing of state show which cells are locked in
+  - Make load do a brute-force solve
+  - Setup warning system for incorrect loads
+  
 * Build sudoku solver rules (For 1&2)
 * Build generic solver that taps into sudoku solver rules
 * Build EA to evolve simple puzzles
