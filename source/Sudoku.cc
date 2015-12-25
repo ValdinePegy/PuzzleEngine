@@ -102,6 +102,36 @@ namespace pze {
   }
   
 
+  bool SudokuState::ForceSolve(int start)
+  {
+    // Advance the start position until we find a cell with a choice to be made.
+    while (opt_count[start] == 1 && start < 81) {
+      if (value[start] == -1) {
+        // If this cell has not be locked, lock it.
+        for (int i=0; i<9; i++) if (options[start][i]) { value[start] = i; break; }
+      }
+      start++;
+    }
+
+    // If we've made it through all positions stop here.
+    if (start == 81) return true;
+    
+    // Step through possibilities of first cell with multiple options.
+    for (int i = 0; i < 9; i++) {
+      if (options[start][i] == false) continue;  // Skip values that are not an option.
+      
+      SudokuState backup_state(*this);    // backup the current state.
+      Set(start, i);                      // set this cell to next possible value.
+      bool solved = ForceSolve(start+1);  // continue attempt to solve!
+      if (solved) return true;            // if solved, we're done!
+      *this = backup_state;               // otherwise, restore from backup.
+    }
+
+    // If we made it this far, we were unable to find a solution.
+    return false;
+  }
+
+  
   ////////////////////
   //  Sudoku
 

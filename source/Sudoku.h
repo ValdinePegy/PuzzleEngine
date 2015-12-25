@@ -223,6 +223,10 @@ namespace pze {
     // Print the current state of the puzzle, including all options available.
     void Print(const std::array<char,9> & symbols, std::ostream & out=std::cout);
     void Print(std::ostream & out=std::cout) override;
+
+    // Use a brute-force approach to completely solve this puzzle.
+    // Return true if solved, false if unsolvable.
+    bool ForceSolve(int start=0);
   };
 
   
