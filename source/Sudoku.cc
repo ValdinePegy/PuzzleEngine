@@ -108,13 +108,16 @@ namespace pze {
     while (opt_count[start] == 1 && start < 81) {
       if (value[start] == -1) {
         // If this cell has not be locked, lock it.
-        for (int i=0; i<9; i++) if (options[start][i]) { value[start] = i; break; }
+        for (int i=0; i<9; i++) if (options[start][i]) { Set(start, i); break; }
       }
       start++;
     }
 
     // If we've made it through all positions stop here.
     if (start == 81) return true;
+    
+    // If there are NO options for this cell, we have an illegal state.
+    if (opt_count[start] < 1) return false;
     
     // Step through possibilities of first cell with multiple options.
     for (int i = 0; i < 9; i++) {
@@ -173,6 +176,16 @@ namespace pze {
       start_cells[load_count] = (cur_id >= 0); // Any non-empty cell should be a start state.
       
       load_count++;
+    }
+
+    // If we need more symbols, fill them in.
+
+    cur_char = '1';
+    while (sym_count < 9) {
+      if (sym_id[cur_char] == -2) {
+        symbols[sym_count++] = cur_char;
+      }
+      cur_char++;
     }
     
     return true;
