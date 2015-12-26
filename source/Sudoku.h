@@ -258,6 +258,9 @@ namespace pze {
     // X cols (rows), then no other row in this cols can be that state.
     std::vector<SudokuMove> Solve_FindSwordfish();
 
+
+    // Make sure the current state is consistant.
+    bool OK();
   };
 
   
@@ -307,6 +310,8 @@ namespace pze {
     Sudoku(const std::string & filename) { Load(filename); }
     
     ~Sudoku() { ; }
+
+    int GetCell(int id) const { return cells[id]; }
 
     const std::array<int,81> & GetCells() const { return cells; }
     const std::array<bool,81> & GtStartCells() const { return start_cells; }

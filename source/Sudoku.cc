@@ -156,6 +156,37 @@ namespace pze {
 
     return moves;
   }
+
+  bool SudokuState::OK()
+  {    
+    // Make sure we are associated with a puzzle.
+    emp_assert(puzzle != nullptr);
+    
+    // Run tests on each cell...
+    for (int cell = 0; cell < 81; cell++) {
+      // Make sure any set values are the only allowed option.
+      if (value[cell] != -1) {
+        for (int i = 0; i < 9; i++) {
+          emp_assert(options[cell][i] == (value[cell] == i));
+        }
+      }
+      
+      // Make sure that the opt_counts are equal to the number of options available.
+      int count = 0;
+      for (int i = 0; i < 9; i++) {
+        if (options[cell][i]) count++;
+      }
+      emp_assert(opt_count[cell] == count);
+
+      // Make sure this state is consistant with its puzzle.
+      const int pstate = puzzle->GetCell(cell);
+      if (pstate >= 0) {
+        emp_assert(options[cell][pstate] == true);
+      }
+    }
+
+    return true;
+  }
   
   
   ////////////////////
