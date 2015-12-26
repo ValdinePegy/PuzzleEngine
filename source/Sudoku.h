@@ -29,8 +29,10 @@ namespace pze {
     int state;
 
   public:
-    SudokuMove() = default;
+    SudokuMove(int id, int s) : cell_id(id), state(s) { ; }    
     ~SudokuMove() { ; }
+
+    SudokuMove & operator=(const SudokuMove &) = default;
 
     int GetID() const override { return cell_id; }
     int GetState() const override { return state; }
@@ -211,9 +213,13 @@ namespace pze {
     // A method to clear out all of the solution info when starting a new solve attempt.
     void Clear() override;
 
-    // Set an individual cell in the current state; remove option from linked cells.
-    bool Set(int cell, int state) override;
+    // Find the next available option for a cell.
+    int FindNext(int cell, int first=0);
 
+    // Set the value of an individual cell; remove option from linked cells.
+    // Return true/false based on whether progress was made toward solving the puzzle.
+    bool Set(int cell, int value) override;
+    
     // Remove a symbol option from a particular cell.
     bool Block(int cell, int state) override;
 
@@ -227,6 +233,31 @@ namespace pze {
     // Use a brute-force approach to completely solve this puzzle.
     // Return true if solved, false if unsolvable.
     bool ForceSolve(int start=0);
+
+    // More human-focused solving techniques:
+
+    // If there's only one state a cell can be, pick it!
+    std::vector<SudokuMove> Solve_FindLastCellState();
+
+    // If there's only one cell that can have a certain state in a region, choose it!
+    std::vector<SudokuMove> Solve_FindLastRegionState();
+
+    // If only cells that can have a state in region A are all also in region
+    // B, no other cell in region B can have that state as a possibility.
+    std::vector<SudokuMove> Solve_FindRegionOverlap();
+    
+    // If K cells are all limited to the same K states, eliminate those states
+    // from all other cells in the same region.
+    std::vector<SudokuMove> Solve_FindLimitedCells();
+    
+    // Eliminate all other possibilities from K cells if they are the only
+    // ones that can possess K states in a single region.
+    std::vector<SudokuMove> Solve_FindLimitedStates();
+
+    // If there are X rows (cols) where a certain state can only be in one of 
+    // X cols (rows), then no other row in this cols can be that state.
+    std::vector<SudokuMove> Solve_FindSwordfish();
+
   };
 
   

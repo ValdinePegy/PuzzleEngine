@@ -16,8 +16,18 @@ namespace pze {
     opt_count.fill(9);
     options.fill({1,1,1, 1,1,1, 1,1,1});
   }
-  
-  // Set an individual cell in the current state; remove option from linked cells.
+
+  // Find the next available option for a cell.
+  int SudokuState::FindNext(int cell, int first)
+  {
+    for (int i = first; i < 9; i++) {
+      if (options[cell][i]) return i;
+    }
+    return -1;  // No options found!
+  }
+
+  // Set the value of an individual cell; remove option from linked cells.
+  // Return true/false based on whether progress was made toward solving the puzzle.
   bool SudokuState::Set(int cell, int state)
   {
     emp_assert(options[cell][state] == true);  // Make sure state is allowed.
@@ -134,6 +144,19 @@ namespace pze {
     return false;
   }
 
+  std::vector<SudokuMove> SudokuState::Solve_FindLastCellState()
+  {
+    std::vector<SudokuMove> moves;
+    for (int i = 0; i < 81; i++) {
+      if (value[i] == -1 && opt_count[i] == 1) {
+        // Find last value.
+        moves.emplace_back(i, FindNext(i));
+      }
+    }
+
+    return moves;
+  }
+  
   
   ////////////////////
   //  Sudoku
