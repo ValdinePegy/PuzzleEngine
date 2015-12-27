@@ -23,21 +23,6 @@
 #include "Puzzle.h"
 
 namespace pze {
-  class SudokuMove : public PuzzleMove {
-  private:
-    int cell_id;
-    int state;
-
-  public:
-    SudokuMove(int id, int s) : cell_id(id), state(s) { ; }    
-    ~SudokuMove() { ; }
-
-    SudokuMove & operator=(const SudokuMove &) = default;
-
-    int GetID() const override { return cell_id; }
-    int GetState() const override { return state; }
-  };
-
 
   class Sudoku;
 
@@ -225,7 +210,8 @@ namespace pze {
 
     // Operate on a "move" object.
     bool Move(const PuzzleMove & move) override;
-
+    using PuzzleState::Move;
+    
     // Print the current state of the puzzle, including all options available.
     void Print(const std::array<char,9> & symbols, std::ostream & out=std::cout);
     void Print(std::ostream & out=std::cout) override;
@@ -237,26 +223,26 @@ namespace pze {
     // More human-focused solving techniques:
 
     // If there's only one state a cell can be, pick it!
-    std::vector<SudokuMove> Solve_FindLastCellState();
+    std::vector<PuzzleMove> Solve_FindLastCellState();
 
     // If there's only one cell that can have a certain state in a region, choose it!
-    std::vector<SudokuMove> Solve_FindLastRegionState();
+    std::vector<PuzzleMove> Solve_FindLastRegionState();
 
     // If only cells that can have a state in region A are all also in region
     // B, no other cell in region B can have that state as a possibility.
-    std::vector<SudokuMove> Solve_FindRegionOverlap();
+    std::vector<PuzzleMove> Solve_FindRegionOverlap();
     
     // If K cells are all limited to the same K states, eliminate those states
     // from all other cells in the same region.
-    std::vector<SudokuMove> Solve_FindLimitedCells();
+    std::vector<PuzzleMove> Solve_FindLimitedCells();
     
     // Eliminate all other possibilities from K cells if they are the only
     // ones that can possess K states in a single region.
-    std::vector<SudokuMove> Solve_FindLimitedStates();
+    std::vector<PuzzleMove> Solve_FindLimitedStates();
 
     // If there are X rows (cols) where a certain state can only be in one of 
     // X cols (rows), then no other row in this cols can be that state.
-    std::vector<SudokuMove> Solve_FindSwordfish();
+    std::vector<PuzzleMove> Solve_FindSwordfish();
 
 
     // Make sure the current state is consistant.

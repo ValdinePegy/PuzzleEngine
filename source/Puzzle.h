@@ -19,16 +19,21 @@ namespace pze {
       BLOCK_STATE
     };
 
-  private:
+  protected:
     MoveType type;
+    int pos_id;
+    int state;
 
+    
   public:
-    PuzzleMove() { ; }
+    PuzzleMove(MoveType t, int p, int s) : type(t), pos_id(p), state(s) { ; }
     virtual ~PuzzleMove() { ; }
 
+    PuzzleMove & operator=(const PuzzleMove &) = default;
+
     MoveType GetType() const { return type; }
-    virtual int GetState() const = 0;
-    virtual int GetID() const = 0;
+    int GetID() const { return pos_id; }
+    int GetState() const { return state; }
   };
 
 
@@ -41,7 +46,7 @@ namespace pze {
     virtual bool Set(int, int) { return false; }
     virtual bool Block(int, int) { return false; }
     virtual bool Move(const PuzzleMove &) { return false; }
-    bool Move(const std::vector<PuzzleMove> & moves) {
+    virtual bool Move(const std::vector<PuzzleMove> & moves) {
       bool progress = false;
       for (auto & move : moves) progress |= Move(move);
       return progress;

@@ -144,13 +144,13 @@ namespace pze {
     return false;
   }
 
-  std::vector<SudokuMove> SudokuState::Solve_FindLastCellState()
+  std::vector<PuzzleMove> SudokuState::Solve_FindLastCellState()
   {
-    std::vector<SudokuMove> moves;
+    std::vector<PuzzleMove> moves;
     for (int i = 0; i < 81; i++) {
       if (value[i] == -1 && opt_count[i] == 1) {
         // Find last value.
-        moves.emplace_back(i, FindNext(i));
+        moves.emplace_back(PuzzleMove::SET_STATE, i, FindNext(i));
       }
     }
 
