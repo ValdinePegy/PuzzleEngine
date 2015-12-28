@@ -340,6 +340,30 @@ namespace pze {
       if (id == 26 || id == 53) out << '\n';
     }
   }
+
   
+  // Calculate the full solving profile based on the other techniques.
+  const PuzzleProfile & Sudoku::CalcProfile()
+  {
+    profile.Clear();  // Reset the profile if already calculated.
+
+    // Setup a starting state for solving the puzzle.
+    SudokuState state = GetState();
+
+    while (true) {    
+      auto moves = state.Solve_FindLastCellState();
+      if (moves.size() > 0) {
+        state.Move(moves);
+        profile.AddMoves(0, moves.size());
+        continue;
+      }
+      
+      break;  // No new moves found!
+    }
+
+    return profile;
+  }
+
+
   
 }

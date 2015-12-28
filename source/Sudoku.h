@@ -220,6 +220,7 @@ namespace pze {
     // Return true if solved, false if unsolvable.
     bool ForceSolve(int start=0);
 
+    
     // More human-focused solving techniques:
 
     // If there's only one state a cell can be, pick it!
@@ -256,8 +257,10 @@ namespace pze {
     // Core puzzle info
     std::array<int,81> cells;         // What is the full solution?
     std::array<bool,81> start_cells;  // Is each cell visible at the start?
-    std::array<char, 9> symbols;     // What symbols are used in this puzzle?
+    std::array<char, 9> symbols;      // What symbols are used in this puzzle?
     
+    PuzzleProfile profile;            // The solving profile associated with this puzzle.
+
     // An iterative step to randomize the state of the grid.
     // Return whether a valid solution was involved.
     bool RandomizeCells_step(emp::Random & random, int next) {
@@ -302,6 +305,7 @@ namespace pze {
     const std::array<int,81> & GetCells() const { return cells; }
     const std::array<bool,81> & GtStartCells() const { return start_cells; }
     const std::array<char,9> & GetSymbols() const { return symbols; }
+    const PuzzleProfile & GetProfile() const { return profile; }
     SudokuState GetState();
     
     void SetStart(int id, bool start_ok=true) { start_cells[id] = start_ok; }
@@ -322,6 +326,10 @@ namespace pze {
     void RandomizeStart(emp::Random & random, double start_prob=1.0);
 
     void Print(std::ostream & out=std::cout) override;
+
+    // Calculate the full solving profile based on the other techniques.
+    const PuzzleProfile & CalcProfile();
+
   };
 }
 

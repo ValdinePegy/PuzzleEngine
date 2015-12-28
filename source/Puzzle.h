@@ -39,8 +39,8 @@ namespace pze {
 
   class PuzzleProfile {
   protected:
-    std::vector<int> counts;
     std::vector<int> levels;
+    std::vector<int> counts;
 
   public:
     PuzzleProfile() { ; }
@@ -48,11 +48,16 @@ namespace pze {
     PuzzleProfile & operator=(const PuzzleProfile &) = default;
 
     int GetSize() { return (int) counts.size(); }
-    int GetCount(int id) { return counts[id]; }
     int GetLevel(int id) { return levels[id]; }
-    void AddMoves(int count, int level) {
-      counts.push_back(count);
+    int GetCount(int id) { return counts[id]; }
+    void AddMoves(int level, int count) {
       levels.push_back(level);
+      counts.push_back(count);
+    }
+
+    void Clear() {
+      levels.resize(0);
+      counts.resize(0);
     }
   };
 
@@ -73,14 +78,14 @@ namespace pze {
     }
 
     virtual void Print(std::ostream & out=std::cout) = 0;
-};
-
+  };
+  
   
   class Puzzle {
   public:
     Puzzle() { ; }
     virtual ~Puzzle() { ; }
-
+    
     virtual void Print(std::ostream & out=std::cout) = 0;
   };
   
