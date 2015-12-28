@@ -47,9 +47,9 @@ namespace pze {
     ~PuzzleProfile() { ; }
     PuzzleProfile & operator=(const PuzzleProfile &) = default;
 
-    int GetSize() { return (int) counts.size(); }
-    int GetLevel(int id) { return levels[id]; }
-    int GetCount(int id) { return counts[id]; }
+    int GetSize() const { return (int) counts.size(); }
+    int GetLevel(int id) const { return levels[id]; }
+    int GetCount(int id) const { return counts[id]; }
     void AddMoves(int level, int count) {
       levels.push_back(level);
       counts.push_back(count);

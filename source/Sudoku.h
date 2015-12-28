@@ -194,6 +194,11 @@ namespace pze {
     ~SudokuState() { ; }
 
     SudokuState& operator=(const SudokuState &) = default;
+
+    int GetValue(int cell) const { return value[cell]; }
+    int GetOptionCount(int cell) const { return opt_count[cell]; }
+    std::array<bool,9> GetOptions(int cell) const { return options[cell]; }
+    const Sudoku * const GetPuzzle() const { return puzzle; }
     
     // A method to clear out all of the solution info when starting a new solve attempt.
     void Clear() override;

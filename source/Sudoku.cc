@@ -203,12 +203,14 @@ namespace pze {
     
   bool Sudoku::Load(std::istream & is)
   {
+    cells.fill(-1);               // Initialize all cells as unset.
     symbols.fill(0);              // Reset all symbols used.
     std::array<int, 128> sym_id;  // Which id is associated with each symbol?
     sym_id.fill(-2);
     sym_id['-'] = -1;             // A dash should be used as an empty cell.
     int sym_count = 0;            // How many unique symbols have we seen?
     
+    // Step through loading each character from the input stream.
     int load_count = 0;
     char cur_char;
     while (load_count < 81) {
@@ -233,13 +235,22 @@ namespace pze {
     }
 
     // If we need more symbols, fill them in.
-
     cur_char = '1';
     while (sym_count < 9) {
       if (sym_id[cur_char] == -2) {
         symbols[sym_count++] = cur_char;
       }
       cur_char++;
+    }
+
+    // If any of the cells are still empty, fill them in by brute force
+    // (but don't mark them as starting cells!)
+    auto state = GetState();
+    state.ForceSolve();
+    for (int i = 0; i < 81; i++) {
+      if (cells[i] == -1) {
+        cells[i] = state.GetValue(i);
+      }
     }
     
     return true;
