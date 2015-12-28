@@ -82,10 +82,16 @@ namespace pze {
   
   
   class Puzzle {
+  protected:
+    PuzzleProfile profile;            // The solving profile associated with this puzzle.
+    
   public:
     Puzzle() { ; }
     virtual ~Puzzle() { ; }
     
+    const PuzzleProfile & GetProfile() const { return profile; }
+
+    virtual const PuzzleProfile & CalcProfile() = 0;
     virtual void Print(std::ostream & out=std::cout) = 0;
   };
   
