@@ -342,11 +342,15 @@ namespace pze {
     for (int i = 0; i < 81; i++) start_cells[i] = random.P(start_prob);
   }
 
-  void Sudoku::Print(std::ostream & out)
+  void Sudoku::Print(bool full, std::ostream & out)
   {
     for (int id = 0; id < 81; id++) {
       if (id % 3 == 0) out << ' ';
-      out << ' ' << cells[id];
+      if (full || start_cells[id]) {
+        out << ' ' << symbols[ cells[id] ];
+      } else {
+        out << " -";
+      }
       if (id % 9 == 8) out << '\n';
       if (id == 26 || id == 53) out << '\n';
     }

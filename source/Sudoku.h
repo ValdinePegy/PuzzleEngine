@@ -327,7 +327,8 @@ namespace pze {
 
     void RandomizeStart(emp::Random & random, double start_prob=1.0);
 
-    void Print(std::ostream & out=std::cout) override;
+    // Print the current version of this puzzle; by default show start state only.
+    void Print(bool full=false, std::ostream & out=std::cout) override;
 
     // Calculate the full solving profile based on the other techniques.
     const PuzzleProfile & CalcProfile() override;

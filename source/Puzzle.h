@@ -92,7 +92,7 @@ namespace pze {
     const PuzzleProfile & GetProfile() const { return profile; }
 
     virtual const PuzzleProfile & CalcProfile() = 0;
-    virtual void Print(std::ostream & out=std::cout) = 0;
+    virtual void Print(bool full=false, std::ostream & out=std::cout) = 0;
   };
   
 }
