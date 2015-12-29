@@ -310,8 +310,17 @@ namespace pze {
     const std::array<char,9> & GetSymbols() const { return symbols; }
     SudokuState GetState();
     
-    void SetStart(int id, bool start_ok=true) { start_cells[id] = start_ok; }
+    void SetStart(int id, bool new_start=true) { start_cells[id] = new_start; }
+    void MutateStart(emp::Random & random, double toggle_p=0.015) {
+      for (int i = 0; i < 81; i++) {
+        if (random.P(toggle_p)) start_cells[i] = !start_cells[i];
+      }
+    }
 
+    double CalcSimpleFitness() {
+      return (double) CalcProfile().GetSize();
+    }
+    
     bool Load(std::istream & is);
 
     bool Load(const std::string & filename) {
