@@ -3,7 +3,8 @@ CFLAGS_all := -Wall -Wno-unused-function -std=c++11 -I../Empirical/ -I./
 
 # Native compiler information
 CXX_nat := g++-4.8
-CFLAGS_nat := -g $(CFLAGS_all)
+#CFLAGS_nat := -g $(CFLAGS_all)
+CFLAGS_nat := -O3 $(CFLAGS_all)
 
 # Emscripten compiler information
 CXX_web := emcc
