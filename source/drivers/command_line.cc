@@ -5,29 +5,58 @@
 //  Main file to run the command-line version of PuzzleEngine
 
 #include <iostream>
+#include <fstream>
 #include "../Sudoku.h"
 #include "EA/Population.h"
 
+void DoRun(const pze::Sudoku & puz, emp::Random & random,
+           int pop_size, int num_updates, double mut_rate, std::ostream & out_log)
+{
+  out_log << pop_size 
+          << ", " << num_updates
+          << ", " << mut_rate;
+  
+  emp::EA::Population<pze::Sudoku> pop;
+  pop.Insert(puz, pop_size);
+
+  for (int update = 0; update < num_updates; update++) {
+    for (int i = 1; i < pop.GetSize(); i++) {
+      pop[i].MutateStart(random, mut_rate);
+    }
+
+    pop.EliteSelect( [](pze::Sudoku* s){return s->CalcSimpleFitness();}, 1, 1);
+    pop.TournamentSelect( [](pze::Sudoku* s){return s->CalcSimpleFitness();},
+                          2, random, pop_size-1);
+    std::cout << update << " : " << pop[0].CalcSimpleFitness() << std::endl;
+    pop.Update();
+  }
+
+  out_log << ", " << pop[0].CalcSimpleFitness()
+          << std::endl;
+  pop[0].Print();
+  
+}
+
 int main()
 {
-  emp::EA::Population<pze::Sudoku> pop;
-
   // pze::Sudoku puz("puzzles/blank.puz");
   // pze::Sudoku puz("puzzles/test2.puz");
   // pze::Sudoku puz("puzzles/wikipedia.puz");
   pze::Sudoku puz("puzzles/letters.puz");
   emp::Random random;
 
-  pop.Insert(puz, 100);
+  int reps = 10;
+  double mut_rates[] = { 0.002, 0.004, 0.0075, 0.015, 0.03, 0.06 };
+  
+  // DoRun(puz, random, 100, 1000, 0.015);
+  std::ofstream out("out.log");
 
-  for (int update = 0; update < 1000; update++) {
-    for (int i = 1; i < pop.GetSize(); i++) pop[i].MutateStart(random, 0.015);
-    pop.EliteSelect( [](pze::Sudoku* s){return s->CalcSimpleFitness();}, 1, 1);
-    pop.TournamentSelect( [](pze::Sudoku* s){return s->CalcSimpleFitness();}, 2, random, 99);
-    std::cout << update << " : " << pop[0].CalcSimpleFitness() << std::endl;
-    pop.Update();
+  for (double m : mut_rates) {
+    for (int r=0; r < reps; r++) {
+      DoRun(puz, random, 100, 1000, m, out);
+    }
   }
-    
+  
   exit(0);
   
   
