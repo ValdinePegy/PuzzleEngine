@@ -1,14 +1,9 @@
 Next steps:
-* Finsih sudoku setup
-  - Make sure symbols are used
-  - Make printing of state show which cells are locked in
-  - Make load do a brute-force solve
+* Finish sudoku setup
   - Setup warning system for incorrect loads
-  
-* Build sudoku solver rules (For 1&2)
-* Build generic solver that taps into sudoku solver rules
+
 * Build EA to evolve simple puzzles
-* Add more sudoku rules
+* Add more sudoku rules (2-6)
 * Indenitfy a full set of objectives and limited resources
 * Build a lexicase selection
 * Hook into Empirical for user interface
@@ -17,3 +12,7 @@ Next steps:
 Fixes needed:
 * Sudoku initialization with random values isn't working right.
 
+
+Optimizations:
+std::array<bool,?> could be changed to emp::BitSet
+Instead of manual search through options for a cell, a lookup could return the next one.
