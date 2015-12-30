@@ -45,12 +45,14 @@ int main()
   pze::Sudoku puz("puzzles/letters.puz");
   emp::Random random;
 
+  std::ofstream out("out.log");
+
+  DoRun(puz, random, 100, 1000, 0.015, out);
+  exit(0);
+
   int reps = 10;
   double mut_rates[] = { 0.002, 0.004, 0.0075, 0.015, 0.03, 0.06 };
   
-  // DoRun(puz, random, 100, 1000, 0.015);
-  std::ofstream out("out.log");
-
   for (double m : mut_rates) {
     for (int r=0; r < reps; r++) {
       DoRun(puz, random, 100, 1000, m, out);
