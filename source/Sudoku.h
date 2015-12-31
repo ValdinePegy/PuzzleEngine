@@ -263,8 +263,8 @@ namespace pze {
     std::array<int,81> cells;         // What is the full solution?
     std::array<bool,81> start_cells;  // Is each cell visible at the start?
     std::array<char, 9> symbols;      // What symbols are used in this puzzle?
-    SudokuState start_state;          // The starting state for this puzzle.
-    bool init;                        // Has this puzzle been initialized yet?
+    mutable SudokuState start_state;  // Starting state for puzzle (init when needed)
+    mutable bool init;                // Has this puzzle been initialized yet?
     
     // An iterative step to randomize the state of the grid.
     // Return whether a valid solution was involved.
@@ -280,7 +280,7 @@ namespace pze {
       return false;
     }
 
-    void InitStartState() {
+    void InitStartState() const {
       emp_assert(init == false);  // Make sure this state hasn't been initialized yet.
 
       // Set the proper cells in the start state
@@ -322,7 +322,7 @@ namespace pze {
     const std::array<int,81> & GetCells() const { return cells; }
     const std::array<bool,81> & GetStartCells() const { return start_cells; }
     const std::array<char,9> & GetSymbols() const { return symbols; }
-    const SudokuState & GetState() {
+    const SudokuState & GetState() const {
       if (init == false) InitStartState();
       return start_state;
     }
