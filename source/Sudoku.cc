@@ -109,7 +109,7 @@ namespace pze {
     // Advance the start position until we find a cell with a choice to be made.
     while (start < 81 && CountOptions(start) == 1) {
       if (value[start] == -1) {
-        // If this cell has not be locked, lock it.
+        // If this cell has not been locked, lock it.
         for (int i=0; i<9; i++) if (HasOption(start,i)) { Set(start, i); break; }
       }
       start++;
@@ -136,9 +136,12 @@ namespace pze {
     return false;
   }
 
+  // If there's only one state a cell can be, pick it!
   std::vector<PuzzleMove> SudokuState::Solve_FindLastCellState()
   {
     std::vector<PuzzleMove> moves;
+
+    // For each cell, check if it has only one state left.
     for (int i = 0; i < 81; i++) {
       if (value[i] == -1 && CountOptions(i) == 1) {
         // Find last value.
@@ -149,6 +152,50 @@ namespace pze {
     return moves;
   }
 
+  // If there's only one cell that can have a certain state in a region, choose it!
+  std::vector<PuzzleMove> SudokuState::Solve_FindLastRegionState()
+  {
+    std::vector<PuzzleMove> moves;
+
+    // For each region, check if it has any states with only one available cell.
+    // @CAO Continue here
+    
+    return moves;
+  }
+
+  // If only cells that can have a state in region A are all also in region
+  // B, no other cell in region B can have that state as a possibility.
+  std::vector<PuzzleMove> SudokuState::Solve_FindRegionOverlap()
+  {
+    std::vector<PuzzleMove> moves;
+    return moves;
+  }
+    
+  // If K cells are all limited to the same K states, eliminate those states
+  // from all other cells in the same region.
+  std::vector<PuzzleMove> SudokuState::Solve_FindLimitedCells()
+  {
+    std::vector<PuzzleMove> moves;
+    return moves;
+  }
+    
+  // Eliminate all other possibilities from K cells if they are the only
+  // ones that can possess K states in a single region.
+  std::vector<PuzzleMove> SudokuState::Solve_FindLimitedStates()
+  {
+    std::vector<PuzzleMove> moves;
+    return moves;
+  }
+
+  // If there are X rows (cols) where a certain state can only be in one of 
+  // X cols (rows), then no other row in this cols can be that state.
+  std::vector<PuzzleMove> SudokuState::Solve_FindSwordfish()
+  {
+    std::vector<PuzzleMove> moves;
+    return moves;
+  }
+
+  
   bool SudokuState::OK()
   {    
     // Make sure we are associated with a puzzle.
