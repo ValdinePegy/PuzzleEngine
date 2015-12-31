@@ -28,9 +28,9 @@ namespace pze {
 
   class SudokuState : public PuzzleState {
   private:
-    std::array<char,81> value;           // Known value for cells; -1 = unknown.
-    std::array<uint32_t, 81> options;    // Which options are available to each cell?
-    const Sudoku * puzzle;               // Pointer back to original puzzle.
+    std::array<char,81> value;           // Known value for cells; -1 = unknown
+    std::array<uint32_t, 81> options;    // Options still available to each cell
+    const Sudoku * puzzle;               // Pointer back to original puzzle
     
     // "members" tracks which cell ids are members of each region.
     static constexpr int members[27][9] = {
@@ -272,7 +272,7 @@ namespace pze {
       return opts_count[options[cell]];
     }
     const Sudoku * const GetPuzzle() const { return puzzle; }
-    bool HasOption(int cell, int state) { return options[cell] & 1 << state; }
+    bool HasOption(int cell, int state) { return options[cell] & (1 << state); }
     
     // A method to clear out all of the solution info when starting a new solve attempt.
     void Clear() override;
@@ -283,6 +283,7 @@ namespace pze {
     // Set the value of an individual cell; remove option from linked cells.
     // Return true/false based on whether progress was made toward solving the puzzle.
     bool Set(int cell, int value) override;
+    bool IsSet(int cell) const { return value[cell] != -1; }
     
     // Remove a symbol option from a particular cell.
     bool Block(int cell, int state) override;

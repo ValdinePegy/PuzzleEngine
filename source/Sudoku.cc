@@ -22,13 +22,16 @@ namespace pze {
   // Return true/false based on whether progress was made toward solving the puzzle.
   bool SudokuState::Set(int cell, int state)
   {
-    emp_assert(cell >= 0 && cell < 81);        // Make sure cell is in a valid range.
-    emp_assert(state >= 0 && state < 9);       // Make sure state is in a valid range.
-    emp_assert(HasOption(cell, state));        // Make sure state is allowed.
+    emp_assert(cell >= 0 && cell < 81);    // Make sure cell is in a valid range.
 
-    bool progress = value[cell] == -1;         // Track if we have made progress toward solving.
-    value[cell] = state;                       // Store found value!
-    options[cell] = 1 << state;
+    // if (state < 0 || state >= 9) std::cout << "state=" << state << std::endl;
+    emp_assert(state >= 0 && state < 9);   // Make sure state is in a valid range.
+    emp_assert(HasOption(cell, state));    // Make sure state is allowed.
+
+    bool progress = value[cell] == -1;     // Track if we have made progress toward solving.
+    value[cell] = state;                   // Store found value!
+    //X options[cell] = 1 << state;
+    options[cell] = 0;                     // No options available to locked cells.
     
     // Now make sure this state is blocked from all linked cells.
     for (int id : links[cell]) Block(id, state);
@@ -49,6 +52,9 @@ namespace pze {
   // Operate on a "move" object.
   bool SudokuState::Move(const PuzzleMove & move)
   {
+    emp_assert(move.GetID() >= 0 && move.GetID() < 81);
+    emp_assert(move.GetState() >= 0 && move.GetState() < 9);
+    
     switch (move.GetType()) {
     case PuzzleMove::SET_STATE:   return Set(move.GetID(), move.GetState());
     case PuzzleMove::BLOCK_STATE: return Block(move.GetID(), move.GetState());
@@ -107,19 +113,17 @@ namespace pze {
     emp_assert(start >= 0 && start <= 81);
     
     // Advance the start position until we find a cell with a choice to be made.
-    while (start < 81 && CountOptions(start) == 1) {
-      if (value[start] == -1) {
-        // If this cell has not been locked, lock it.
-        for (int i=0; i<9; i++) if (HasOption(start,i)) { Set(start, i); break; }
-      }
-      start++;
+    while (start < 81) {
+      const int opt_count = CountOptions(start);
+      if (opt_count == 0 && !IsSet(start)) return false;      // No option & unlocked -> backtrack!
+      else if (opt_count == 1) Set( start, FindNext(start) ); // One option -> lock it!
+      else if (opt_count > 1) break;                          // Multiple options -> move on!
+    
+      start++;   // Must have locked option, increment and keep looping!
     }
 
     // If we've made it through all positions stop here.
     if (start == 81) return true;
-    
-    // If there are NO options for this cell, we have an illegal state.
-    if (CountOptions(start) == 0) return false;
     
     // Step through possibilities of first cell with multiple options.
     for (int i = 0; i < 9; i++) {
@@ -129,7 +133,7 @@ namespace pze {
       Set(start, i);                      // set this cell to next possible value.
       bool solved = ForceSolve(start+1);  // continue attempt to solve!
       if (solved) return true;            // if solved, we're done!
-      *this = backup_state;               // otherwise, restore from backup.
+      *this = backup_state;               // otherwise, restore from backup and loop.
     }
 
     // If we made it this far, we were unable to find a solution.
@@ -143,7 +147,8 @@ namespace pze {
 
     // For each cell, check if it has only one state left.
     for (int i = 0; i < 81; i++) {
-      if (value[i] == -1 && CountOptions(i) == 1) {
+      //X if (value[i] == -1 && CountOptions(i) == 1) {
+      if (CountOptions(i) == 1) {
         // Find last value.
         moves.emplace_back(PuzzleMove::SET_STATE, i, FindNext(i));
       }
@@ -205,9 +210,7 @@ namespace pze {
     for (int cell = 0; cell < 81; cell++) {
       // Make sure any set values are the only allowed option.
       if (value[cell] != -1) {
-        for (int i = 0; i < 9; i++) {
-          emp_assert(HasOption(cell,i) == (value[cell] == i));
-        }
+        emp_assert(options[cell] == 0);
       }
       
       // Make sure that the opt_counts are equal to the number of options available.
@@ -220,7 +223,7 @@ namespace pze {
       // Make sure this state is consistant with its puzzle.
       const int pstate = puzzle->GetCell(cell);
       if (pstate >= 0) {
-        emp_assert(HasOption(cell,pstate) == true);
+        emp_assert(pstate == value[cell] || HasOption(cell,pstate) == true);
       }
     }
 
@@ -415,6 +418,8 @@ namespace pze {
       break;  // No new moves found!
     }
 
+    // state.OK();
+    
     return profile;
   }
 

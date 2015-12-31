@@ -5,7 +5,8 @@ CFLAGS_all := -Wall -Wno-unused-function -std=c++11 -I../Empirical/ -I./
 CXX_nat := g++-4.8
 #CFLAGS_nat := -g $(CFLAGS_all)    # Debug mode
 #CFLAGS_nat := -O3 $(CFLAGS_all)   # Optimized mode
-CFLAGS_nat := $(CFLAGS_all) -pg   # Profile mode
+CFLAGS_nat := -DNDEBUG -O3 $(CFLAGS_all)   # Extreme Optimized mode
+#CFLAGS_nat := $(CFLAGS_all) -pg   # Profile mode
 
 # Emscripten compiler information
 CXX_web := emcc
