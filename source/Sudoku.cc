@@ -9,12 +9,12 @@ namespace pze {
   constexpr int SudokuState::regions[81][3];  // What regions is each cell part of?
   constexpr int SudokuState::links[81][20];   // What other cells is each cell linked to?
   constexpr int SudokuState::next_opt[512];   // Given set of options, which is available next?
+  constexpr int SudokuState::opts_count[512]; // Given set of options, how many are there?
                                        
   // A method to clear out all of the solution info when starting a new solve attempt.
   void SudokuState::Clear()
   {
     value.fill(-1);
-    opt_count.fill(9);
     options.fill(511);  // Set all options to one.  or 0b111111111
   }
 
@@ -28,7 +28,6 @@ namespace pze {
 
     bool progress = value[cell] == -1;         // Track if we have made progress toward solving.
     value[cell] = state;                       // Store found value!
-    opt_count[cell] = 1;                       // This is the only option now.
     options[cell] = 1 << state;
     
     // Now make sure this state is blocked from all linked cells.
@@ -42,7 +41,6 @@ namespace pze {
   {
     if (HasOption(cell, state)) {
       options[cell] &= ~(1 << state);
-      opt_count[cell]--;
       return true;
     }
     return false;
@@ -100,16 +98,16 @@ namespace pze {
   void SudokuState::Print(std::ostream & out)
   {
     // If no character map is provided, use default for Sudoku
-    // std::array<char,9> symbols = {'1', '2', '3', '4', '5', '6', '7', '8', '9'};
-    // Print(symbols, out);
     Print(puzzle->GetSymbols(), out);
   }
   
 
   bool SudokuState::ForceSolve(int start)
   {
+    emp_assert(start >= 0 && start <= 81);
+    
     // Advance the start position until we find a cell with a choice to be made.
-    while (opt_count[start] == 1 && start < 81) {
+    while (start < 81 && CountOptions(start) == 1) {
       if (value[start] == -1) {
         // If this cell has not be locked, lock it.
         for (int i=0; i<9; i++) if (HasOption(start,i)) { Set(start, i); break; }
@@ -121,7 +119,7 @@ namespace pze {
     if (start == 81) return true;
     
     // If there are NO options for this cell, we have an illegal state.
-    if (opt_count[start] < 1) return false;
+    if (CountOptions(start) == 0) return false;
     
     // Step through possibilities of first cell with multiple options.
     for (int i = 0; i < 9; i++) {
@@ -142,7 +140,7 @@ namespace pze {
   {
     std::vector<PuzzleMove> moves;
     for (int i = 0; i < 81; i++) {
-      if (value[i] == -1 && opt_count[i] == 1) {
+      if (value[i] == -1 && CountOptions(i) == 1) {
         // Find last value.
         moves.emplace_back(PuzzleMove::SET_STATE, i, FindNext(i));
       }
@@ -170,7 +168,7 @@ namespace pze {
       for (int i = 0; i < 9; i++) {
         if (HasOption(cell,i)) count++;
       }
-      emp_assert(opt_count[cell] == count);
+      emp_assert(CountOptions(cell) == count);
 
       // Make sure this state is consistant with its puzzle.
       const int pstate = puzzle->GetCell(cell);
