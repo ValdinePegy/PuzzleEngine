@@ -28,10 +28,10 @@ namespace pze {
 
   class SudokuState : public PuzzleState {
   private:
-    std::array<char,81> value;                   // Known value for cells; -1 = unknown.
-    std::array<char,81> opt_count;               // How many options does each cell have?
-    std::array<std::array<bool,9>, 81> options;  // Which options are available to each cell?
-    const Sudoku * puzzle;                       // Pointer back to original puzzle.
+    std::array<char,81> value;           // Known value for cells; -1 = unknown.
+    std::array<char,81> opt_count;       // How many options does each cell have?
+    std::array<uint32_t, 81> options;    // Which options are available to each cell?
+    const Sudoku * puzzle;               // Pointer back to original puzzle.
     
     // "members" tracks which cell ids are members of each region.
     static constexpr int members[27][9] = {
@@ -187,6 +187,41 @@ namespace pze {
       { 8, 17, 26, 35, 44, 53, 60, 61, 62, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79 }
     };
     
+    static constexpr int next_opt[512] = {
+      -1, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+      4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+      5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+      4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+      6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+      4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+      5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+      4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+      7, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+      4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+      5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+      4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+      6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+      4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+      5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+      4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+      8, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+      4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+      5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+      4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+      6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+      4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+      5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+      4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+      7, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+      4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+      5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+      4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+      6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+      4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+      5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+      4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+    };
+
   public:
     SudokuState(const Sudoku * p) : puzzle(p) { Clear(); }
     SudokuState(const Sudoku & p) : puzzle(&p) { Clear(); }
@@ -197,14 +232,15 @@ namespace pze {
 
     int GetValue(int cell) const { return value[cell]; }
     int GetOptionCount(int cell) const { return opt_count[cell]; }
-    std::array<bool,9> GetOptions(int cell) const { return options[cell]; }
+    uint32_t GetOptions(int cell) const { return options[cell]; }
     const Sudoku * const GetPuzzle() const { return puzzle; }
+    bool HasOption(int cell, int state) { return options[cell] & 1 << state; }
     
     // A method to clear out all of the solution info when starting a new solve attempt.
     void Clear() override;
 
     // Find the next available option for a cell.
-    int FindNext(int cell, int first=0);
+    int FindNext(int cell) { return next_opt[options[cell]]; }
 
     // Set the value of an individual cell; remove option from linked cells.
     // Return true/false based on whether progress was made toward solving the puzzle.

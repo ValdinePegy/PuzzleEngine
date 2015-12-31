@@ -5,25 +5,17 @@ namespace pze {
   ////////////////////
   //  SudokuState
 
-  constexpr int SudokuState::members[27][9];
-  constexpr int SudokuState::regions[81][3];
-  constexpr int SudokuState::links[81][20];
+  constexpr int SudokuState::members[27][9];  // What cells are part of each region?
+  constexpr int SudokuState::regions[81][3];  // What regions is each cell part of?
+  constexpr int SudokuState::links[81][20];   // What other cells is each cell linked to?
+  constexpr int SudokuState::next_opt[512];   // Given set of options, which is available next?
                                        
   // A method to clear out all of the solution info when starting a new solve attempt.
   void SudokuState::Clear()
   {
     value.fill(-1);
     opt_count.fill(9);
-    options.fill({1,1,1, 1,1,1, 1,1,1});
-  }
-
-  // Find the next available option for a cell.
-  int SudokuState::FindNext(int cell, int first)
-  {
-    for (int i = first; i < 9; i++) {
-      if (options[cell][i]) return i;
-    }
-    return -1;  // No options found!
+    options.fill(511);  // Set all options to one.  or 0b111111111
   }
 
   // Set the value of an individual cell; remove option from linked cells.
@@ -32,13 +24,12 @@ namespace pze {
   {
     emp_assert(cell >= 0 && cell < 81);        // Make sure cell is in a valid range.
     emp_assert(state >= 0 && state < 9);       // Make sure state is in a valid range.
-    emp_assert(options[cell][state] == true);  // Make sure state is allowed.
+    emp_assert(HasOption(cell, state));        // Make sure state is allowed.
 
     bool progress = value[cell] == -1;         // Track if we have made progress toward solving.
     value[cell] = state;                       // Store found value!
     opt_count[cell] = 1;                       // This is the only option now.
-    options[cell] = {0,0,0,0,0,0,0,0,0};
-    options[cell][state] = 1;
+    options[cell] = 1 << state;
     
     // Now make sure this state is blocked from all linked cells.
     for (int id : links[cell]) Block(id, state);
@@ -49,8 +40,8 @@ namespace pze {
   // Remove a symbol option from a particular cell.
   bool SudokuState::Block(int cell, int state)
   {
-    if (options[cell][state]) { // If this value was previously an option, remove it.
-      options[cell][state] = false;
+    if (HasOption(cell, state)) {
+      options[cell] &= ~(1 << state);
       opt_count[cell]--;
       return true;
     }
@@ -82,9 +73,9 @@ namespace pze {
           if (c%3==0) out << " |";
           else out << "  ";
           if (value[id] == -1) {
-            out << " " << (char) (options[id][s]  ? symbols[s] : '.')
-                << " " << (char) (options[id][s+1] ? symbols[s+1] : '.')
-                << " " << (char) (options[id][s+2] ? symbols[s+2] : '.');
+            out << " " << (char) (HasOption(id,s)   ? symbols[s] : '.')
+                << " " << (char) (HasOption(id,s+1) ? symbols[s+1] : '.')
+                << " " << (char) (HasOption(id,s+2) ? symbols[s+2] : '.');
           } else {
             if (s==0) out << "      ";
             if (s==3) out << "   " << symbols[value[id]] << "  ";
@@ -121,7 +112,7 @@ namespace pze {
     while (opt_count[start] == 1 && start < 81) {
       if (value[start] == -1) {
         // If this cell has not be locked, lock it.
-        for (int i=0; i<9; i++) if (options[start][i]) { Set(start, i); break; }
+        for (int i=0; i<9; i++) if (HasOption(start,i)) { Set(start, i); break; }
       }
       start++;
     }
@@ -134,7 +125,7 @@ namespace pze {
     
     // Step through possibilities of first cell with multiple options.
     for (int i = 0; i < 9; i++) {
-      if (options[start][i] == false) continue;  // Skip values that are not an option.
+      if (HasOption(start,i) == false) continue;  // Skip values that are not an option.
       
       SudokuState backup_state(*this);    // backup the current state.
       Set(start, i);                      // set this cell to next possible value.
@@ -170,21 +161,21 @@ namespace pze {
       // Make sure any set values are the only allowed option.
       if (value[cell] != -1) {
         for (int i = 0; i < 9; i++) {
-          emp_assert(options[cell][i] == (value[cell] == i));
+          emp_assert(HasOption(cell,i) == (value[cell] == i));
         }
       }
       
       // Make sure that the opt_counts are equal to the number of options available.
       int count = 0;
       for (int i = 0; i < 9; i++) {
-        if (options[cell][i]) count++;
+        if (HasOption(cell,i)) count++;
       }
       emp_assert(opt_count[cell] == count);
 
       // Make sure this state is consistant with its puzzle.
       const int pstate = puzzle->GetCell(cell);
       if (pstate >= 0) {
-        emp_assert(options[cell][pstate] == true);
+        emp_assert(HasOption(cell,pstate) == true);
       }
     }
 
@@ -255,7 +246,7 @@ namespace pze {
   void Sudoku::RandomizeCells(emp::Random & random)
   {
     init = false;                 // If this puzzle was initialized, it no longer is.
-    
+    // @CAO Do This!!!
     // cells.fill(-1);                        // Clear out current cells
     // solve.Clear();                         // Clear out helper info
     // for (int i=0; i<9; i++) {              // Setup first cells to be 0-8
