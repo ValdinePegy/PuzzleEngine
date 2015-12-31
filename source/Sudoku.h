@@ -188,8 +188,8 @@ namespace pze {
     };
     
   public:
-    SudokuState(Sudoku * p) : puzzle(p) { Clear(); }
-    SudokuState(Sudoku & p) : puzzle(&p) { Clear(); }
+    SudokuState(const Sudoku * p) : puzzle(p) { Clear(); }
+    SudokuState(const Sudoku & p) : puzzle(&p) { Clear(); }
     SudokuState(const SudokuState &) = default;
     ~SudokuState() { ; }
 
@@ -263,6 +263,8 @@ namespace pze {
     std::array<int,81> cells;         // What is the full solution?
     std::array<bool,81> start_cells;  // Is each cell visible at the start?
     std::array<char, 9> symbols;      // What symbols are used in this puzzle?
+    SudokuState start_state;          // The starting state for this puzzle.
+    bool init;                        // Has this puzzle been initialized yet?
     
     // An iterative step to randomize the state of the grid.
     // Return whether a valid solution was involved.
@@ -278,8 +280,19 @@ namespace pze {
       return false;
     }
 
+    void InitStartState() {
+      emp_assert(init == false);  // Make sure this state hasn't been initialized yet.
+
+      // Set the proper cells in the start state
+      start_state.Clear();
+      for (int i = 0; i < 81; i++) {
+        if (start_cells[i]) start_state.Set(i, cells[i]);
+      }
+      init = true;
+    }
+    
   public:
-    Sudoku() {
+    Sudoku() : start_state(this), init(false) {
       cells = { 0,1,2, 3,4,5, 6,7,8, 
                 5,7,4, 6,0,8, 1,2,3, 
                 3,8,6, 1,7,2, 0,5,4, 
@@ -294,24 +307,32 @@ namespace pze {
       start_cells.fill(false);
     }
     Sudoku(const Sudoku &) = default;
-    Sudoku(emp::Random & random, double start_prob=1.0) {
+    Sudoku(emp::Random & random, double start_prob=1.0) : start_state(this), init(false) {
       RandomizeCells(random);
       RandomizeStart(random, start_prob);
     }
-    Sudoku(std::istream & is) { Load(is); }
-    Sudoku(const std::string & filename) { Load(filename); }
+    Sudoku(std::istream & is) : start_state(this), init (false) { Load(is); }
+    Sudoku(const std::string & filename) : start_state(this), init(false) { Load(filename); }
     
     ~Sudoku() { ; }
 
     int GetCell(int id) const { return cells[id]; }
-
+    bool GetStart(int id) const { return start_cells[id]; }
+   
     const std::array<int,81> & GetCells() const { return cells; }
-    const std::array<bool,81> & GtStartCells() const { return start_cells; }
+    const std::array<bool,81> & GetStartCells() const { return start_cells; }
     const std::array<char,9> & GetSymbols() const { return symbols; }
-    SudokuState GetState();
-    
-    void SetStart(int id, bool new_start=true) { start_cells[id] = new_start; }
+    const SudokuState & GetState() {
+      if (init == false) InitStartState();
+      return start_state;
+    }
+
+    void SetStart(int id, bool new_start=true) {
+      init = false;                 // If this puzzle was initialized, it no longer is.
+      start_cells[id] = new_start;
+    }
     void MutateStart(emp::Random & random, double toggle_p=0.015) {
+      init = false;                 // If this puzzle was initialized, it no longer is.
       for (int i = 0; i < 81; i++) {
         if (random.P(toggle_p)) start_cells[i] = !start_cells[i];
       }

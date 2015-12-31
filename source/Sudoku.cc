@@ -30,8 +30,11 @@ namespace pze {
   // Return true/false based on whether progress was made toward solving the puzzle.
   bool SudokuState::Set(int cell, int state)
   {
+    emp_assert(cell >= 0 && cell < 81);        // Make sure cell is in a valid range.
+    emp_assert(state >= 0 && state < 9);       // Make sure state is in a valid range.
     emp_assert(options[cell][state] == true);  // Make sure state is allowed.
-    bool progress = value[cell] == -1;
+
+    bool progress = value[cell] == -1;         // Track if we have made progress toward solving.
     value[cell] = state;                       // Store found value!
     opt_count[cell] = 1;                       // This is the only option now.
     options[cell] = {0,0,0,0,0,0,0,0,0};
@@ -192,17 +195,10 @@ namespace pze {
   ////////////////////
   //  Sudoku
 
-  SudokuState Sudoku::GetState()
-  {
-    SudokuState state(this);
-    for (int i = 0; i < 81; i++) {
-      if (start_cells[i]) state.Set(i, cells[i]);
-    }
-    return state;
-  }
-    
   bool Sudoku::Load(std::istream & is)
   {
+    init = false;                 // If this puzzle was initialized, it no longer is.
+
     cells.fill(-1);               // Initialize all cells as unset.
     symbols.fill(0);              // Reset all symbols used.
     std::array<int, 128> sym_id;  // Which id is associated with each symbol?
@@ -258,6 +254,8 @@ namespace pze {
 
   void Sudoku::RandomizeCells(emp::Random & random)
   {
+    init = false;                 // If this puzzle was initialized, it no longer is.
+    
     // cells.fill(-1);                        // Clear out current cells
     // solve.Clear();                         // Clear out helper info
     // for (int i=0; i<9; i++) {              // Setup first cells to be 0-8
@@ -283,11 +281,13 @@ namespace pze {
   // * Shuffle rows/columns OF sets of three
   void Sudoku::Shuffle(emp::Random & random)
   {
+    init = false;                 // If this puzzle was initialized, it no longer is.
+    
     // Remap all states.
     std::vector<int> remap( random.GetPermutation(9) );
     for (int & c : cells) c = remap[c];
     
-      // Shuffle rows
+    // Shuffle rows
     std::vector<int> row_blockset_map( random.GetPermutation(3) );
     std::vector<int> row_block0_map( random.GetPermutation(3) );
     std::vector<int> row_block1_map( random.GetPermutation(3) );
@@ -339,6 +339,9 @@ namespace pze {
   
   void Sudoku::RandomizeStart(emp::Random & random, double start_prob)
   {
+    emp_assert(start_prob >= 0.0 && start_prob <= 1.0);
+
+    init = false;                 // If this puzzle was initialized, it no longer is.
     for (int i = 0; i < 81; i++) start_cells[i] = random.P(start_prob);
   }
 
