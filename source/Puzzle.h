@@ -59,6 +59,13 @@ namespace pze {
       levels.resize(0);
       counts.resize(0);
     }
+
+    void Print(std::ostream & out=std::cout) const {
+      for (int i = 0; i < (int) levels.size(); i++) {
+        out << levels[i] << ":" << counts[i] << " ";
+      }
+      out << std::endl;
+    }
   };
 
 
@@ -68,13 +75,11 @@ namespace pze {
     virtual ~PuzzleState() { ; }
 
     virtual void Clear() { ; }
-    virtual bool Set(int, int) { return false; }
-    virtual bool Block(int, int) { return false; }
-    virtual bool Move(const PuzzleMove &) { return false; }
-    virtual bool Move(const std::vector<PuzzleMove> & moves) {
-      bool progress = false;
-      for (auto & move : moves) progress |= Move(move);
-      return progress;
+    virtual void Set(int, int) { ; }
+    virtual void Block(int, int) { ; }
+    virtual void Move(const PuzzleMove &) { ; }
+    virtual void Move(const std::vector<PuzzleMove> & moves) {
+      for (auto & move : moves) Move(move);
     }
 
     virtual void Print(std::ostream & out=std::cout) = 0;

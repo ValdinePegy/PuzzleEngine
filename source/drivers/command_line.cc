@@ -34,6 +34,7 @@ void DoRun(const pze::Sudoku & puz, emp::Random & random,
   out_log << ", " << pop[0].CalcSimpleFitness()
           << std::endl;
   pop[0].Print();
+  pop[0].CalcProfile().Print();
   
 }
 
@@ -48,6 +49,7 @@ int main()
   std::ofstream out("out.log");
 
   DoRun(puz, random, 100, 1000, 0.015, out);
+
   exit(0);
 
   int reps = 10;

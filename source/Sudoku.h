@@ -272,7 +272,12 @@ namespace pze {
       return opts_count[options[cell]];
     }
     const Sudoku * const GetPuzzle() const { return puzzle; }
-    bool HasOption(int cell, int state) { return options[cell] & (1 << state); }
+    bool HasOption(int cell, int state) {
+      emp_assert(cell >= 0 && cell < 81, cell);
+      emp_assert(state >= 0 && state < 9, state);
+      return options[cell] & (1 << state);
+    }
+    bool IsSet(int cell) const { return value[cell] != -1; }
     
     // A method to clear out all of the solution info when starting a new solve attempt.
     void Clear() override;
@@ -282,14 +287,13 @@ namespace pze {
 
     // Set the value of an individual cell; remove option from linked cells.
     // Return true/false based on whether progress was made toward solving the puzzle.
-    bool Set(int cell, int value) override;
-    bool IsSet(int cell) const { return value[cell] != -1; }
+    void Set(int cell, int value) override;
     
     // Remove a symbol option from a particular cell.
-    bool Block(int cell, int state) override;
+    void Block(int cell, int state) override { options[cell] &= ~(1 << state); }
 
     // Operate on a "move" object.
-    bool Move(const PuzzleMove & move) override;
+    void Move(const PuzzleMove & move) override;
     using PuzzleState::Move;
     
     // Print the current state of the puzzle, including all options available.
@@ -381,7 +385,9 @@ namespace pze {
 
       start_cells.fill(false);
     }
-    Sudoku(const Sudoku &) = default;
+    Sudoku(const Sudoku & in)
+      : cells(in.cells), start_cells(in.start_cells), symbols(in.symbols)
+      , start_state(this), init(false) { ; }
     Sudoku(emp::Random & random, double start_prob=1.0) : start_state(this), init(false) {
       RandomizeCells(random);
       RandomizeStart(random, start_prob);

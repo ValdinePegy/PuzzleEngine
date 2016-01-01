@@ -20,48 +20,33 @@ namespace pze {
 
   // Set the value of an individual cell; remove option from linked cells.
   // Return true/false based on whether progress was made toward solving the puzzle.
-  bool SudokuState::Set(int cell, int state)
+  void SudokuState::Set(int cell, int state)
   {
     emp_assert(cell >= 0 && cell < 81);    // Make sure cell is in a valid range.
-
-    // if (state < 0 || state >= 9) std::cout << "state=" << state << std::endl;
     emp_assert(state >= 0 && state < 9);   // Make sure state is in a valid range.
-    emp_assert(HasOption(cell, state));    // Make sure state is allowed.
 
-    bool progress = value[cell] == -1;     // Track if we have made progress toward solving.
+    if (value[cell] == state) return;      // If state is already set, SKIP!
+
+    emp_assert(HasOption(cell,state));     // Make sure state is allowed.
     value[cell] = state;                   // Store found value!
-    //X options[cell] = 1 << state;
     options[cell] = 0;                     // No options available to locked cells.
     
     // Now make sure this state is blocked from all linked cells.
     for (int id : links[cell]) Block(id, state);
-      
-    return progress;
-  }
-
-  // Remove a symbol option from a particular cell.
-  bool SudokuState::Block(int cell, int state)
-  {
-    if (HasOption(cell, state)) {
-      options[cell] &= ~(1 << state);
-      return true;
-    }
-    return false;
   }
 
   // Operate on a "move" object.
-  bool SudokuState::Move(const PuzzleMove & move)
+  void SudokuState::Move(const PuzzleMove & move)
   {
-    emp_assert(move.GetID() >= 0 && move.GetID() < 81);
-    emp_assert(move.GetState() >= 0 && move.GetState() < 9);
+    emp_assert(move.GetID() >= 0 && move.GetID() < 81, move.GetID());
+    emp_assert(move.GetState() >= 0 && move.GetState() < 9, move.GetState());
     
     switch (move.GetType()) {
-    case PuzzleMove::SET_STATE:   return Set(move.GetID(), move.GetState());
-    case PuzzleMove::BLOCK_STATE: return Block(move.GetID(), move.GetState());
+    case PuzzleMove::SET_STATE:   Set(move.GetID(), move.GetState());   break;
+    case PuzzleMove::BLOCK_STATE: Block(move.GetID(), move.GetState()); break;
+    default:
+      emp_assert(false);   // One of the previous move options should have been triggered!
     }
-    
-    emp_assert(false);   // One of the previous move options should have been triggered!
-    return false;
   }
   
 
@@ -147,7 +132,6 @@ namespace pze {
 
     // For each cell, check if it has only one state left.
     for (int i = 0; i < 81; i++) {
-      //X if (value[i] == -1 && CountOptions(i) == 1) {
       if (CountOptions(i) == 1) {
         // Find last value.
         moves.emplace_back(PuzzleMove::SET_STATE, i, FindNext(i));
@@ -163,7 +147,25 @@ namespace pze {
     std::vector<PuzzleMove> moves;
 
     // For each region, check if it has any states with only one available cell.
-    // @CAO Continue here
+    for (const auto & region : members) {
+      uint32_t opt_any = 0;     // Is a state an option in ANY cell?
+      uint32_t opt_multi = 0;   // Is a state an option in MULTIPLE cells?
+      for (const int c : region) {
+        opt_multi |= (options[c] & opt_any);  // If we already had an option AND see a new one.
+        opt_any |= options[c];                // Mark these options as possible.
+      }
+      const uint32_t opt_once = opt_any & ~opt_multi;
+
+      // If any options are only available in one cell, find them and lock them in.
+      if (opt_once) {
+        for (const int c : region) {
+          const uint32_t opt_unique = options[c] & opt_once;
+          if (opt_unique) {
+            moves.emplace_back(PuzzleMove::SET_STATE, c, next_opt[opt_unique]);
+          }
+        }
+      }
+    }
     
     return moves;
   }
@@ -412,6 +414,13 @@ namespace pze {
       if (moves.size() > 0) {
         state.Move(moves);
         profile.AddMoves(0, moves.size());
+        continue;
+      }
+      
+      moves = state.Solve_FindLastRegionState();
+      if (moves.size() > 0) {
+        state.Move(moves);
+        profile.AddMoves(1, moves.size());
         continue;
       }
       
