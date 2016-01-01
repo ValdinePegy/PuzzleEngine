@@ -427,6 +427,7 @@ namespace pze {
       break;  // No new moves found!
     }
 
+    profile.SetSolved(state.IsSolved());
     // state.OK();
     
     return profile;

@@ -278,6 +278,10 @@ namespace pze {
       return options[cell] & (1 << state);
     }
     bool IsSet(int cell) const { return value[cell] != -1; }
+    bool IsSolved() {
+      for (uint32_t o : options) if (o) return false;
+      return true;
+    }
     
     // A method to clear out all of the solution info when starting a new solve attempt.
     void Clear() override;
@@ -371,18 +375,19 @@ namespace pze {
     }
     
   public:
-    Sudoku() : start_state(this), init(false) {
-      cells = { 0,1,2, 3,4,5, 6,7,8, 
-                5,7,4, 6,0,8, 1,2,3, 
-                3,8,6, 1,7,2, 0,5,4, 
-                8,2,0, 7,3,6, 4,1,5, 
-                1,5,3, 8,2,4, 7,6,0, 
-                6,4,7, 0,5,1, 3,8,2, 
-                7,0,1, 5,8,3, 2,4,6, 
-                4,6,5, 2,1,0, 8,3,7, 
-                2,3,8, 4,6,7, 5,0,1
-      };
-
+    Sudoku()
+      : cells({{ 0,1,2, 3,4,5, 6,7,8, 
+                 5,7,4, 6,0,8, 1,2,3, 
+                 3,8,6, 1,7,2, 0,5,4, 
+                 8,2,0, 7,3,6, 4,1,5, 
+                 1,5,3, 8,2,4, 7,6,0, 
+                 6,4,7, 0,5,1, 3,8,2, 
+                 7,0,1, 5,8,3, 2,4,6, 
+                 4,6,5, 2,1,0, 8,3,7, 
+                 2,3,8, 4,6,7, 5,0,1
+              }})
+      , start_state(this), init(false)
+    {
       start_cells.fill(false);
     }
     Sudoku(const Sudoku & in)
@@ -420,7 +425,8 @@ namespace pze {
     }
 
     double CalcSimpleFitness() {
-      return (double) CalcProfile().GetSize();
+      const auto & profile = CalcProfile();
+      return (double) profile.GetSize() + (profile.IsSolved() ? 0 : 100);
     }
     
     bool Load(std::istream & is);

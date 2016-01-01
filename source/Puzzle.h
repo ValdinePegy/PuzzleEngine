@@ -39,8 +39,9 @@ namespace pze {
 
   class PuzzleProfile {
   protected:
-    std::vector<int> levels;
-    std::vector<int> counts;
+    std::vector<int> levels;  // How hard were each set of moves?
+    std::vector<int> counts;  // How many options were there for each set of moves?
+    bool solved;              // Was the puzzle solved?
 
   public:
     PuzzleProfile() { ; }
@@ -50,10 +51,13 @@ namespace pze {
     int GetSize() const { return (int) counts.size(); }
     int GetLevel(int id) const { return levels[id]; }
     int GetCount(int id) const { return counts[id]; }
+    bool IsSolved() const { return solved; }
+    
     void AddMoves(int level, int count) {
       levels.push_back(level);
       counts.push_back(count);
     }
+    void SetSolved(bool in_solved) { solved = in_solved; }
 
     void Clear() {
       levels.resize(0);
