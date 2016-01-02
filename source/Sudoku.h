@@ -386,6 +386,7 @@ namespace pze {
                  4,6,5, 2,1,0, 8,3,7, 
                  2,3,8, 4,6,7, 5,0,1
               }})
+      , symbols({{'1','2','3','4','5','6','7','8','9'}})
       , start_state(this), init(false)
     {
       start_cells.fill(false);
@@ -404,7 +405,8 @@ namespace pze {
 
     int GetCell(int id) const { return cells[id]; }
     bool GetStart(int id) const { return start_cells[id]; }
-   
+    char GetCellSymbol(int id) const { return start_cells[id] ? symbols[cells[id]] : '-'; }
+    
     const std::array<int,81> & GetCells() const { return cells; }
     const std::array<bool,81> & GetStartCells() const { return start_cells; }
     const std::array<char,9> & GetSymbols() const { return symbols; }
