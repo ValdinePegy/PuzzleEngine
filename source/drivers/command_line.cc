@@ -26,7 +26,7 @@ void DoRun(const pze::Sudoku & puz, emp::Random & random,
 
     pop.EliteSelect( [](pze::Sudoku* s){return s->CalcSimpleFitness();}, 1, 1);
     pop.TournamentSelect( [](pze::Sudoku* s){return s->CalcSimpleFitness();},
-                          2, random, pop_size-1);
+                          4, random, pop_size-1);
     std::cout << update << " : " << pop[0].CalcSimpleFitness() << std::endl;
     pop.Update();
   }
@@ -48,7 +48,7 @@ int main()
 
   std::ofstream out("out.log");
 
-  DoRun(puz, random, 100, 1000, 0.015, out);
+  DoRun(puz, random, 1000, 100, 0.015, out);
 
   exit(0);
 
@@ -84,7 +84,6 @@ int main()
 
 
   auto & profile = puz.CalcProfile();
-
   for (int i = 0; i < profile.GetSize(); i++) {
     std::cout << profile.GetLevel(i) << " : " << profile.GetCount(i) << std::endl;
   }

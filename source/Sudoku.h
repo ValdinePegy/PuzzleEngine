@@ -451,6 +451,7 @@ namespace pze {
     const PuzzleProfile & CalcProfile() override;
 
   };
-}
+
+} // END pze namespace
 
 #endif
