@@ -80,13 +80,24 @@ extern "C" int main()
       if (anim.GetActive()) but.Label("Pause");
       else but.Label("Start");
     }, "Pause", "toggle_run");
+
+  auto reset_but = doc.AddButton([&anim]{
+      update = 0;
+      pze::Sudoku puz;
+      pop.Clear();
+      pop.Insert(puz, pop_size);
+    }, "Reset", "reset_run");
   
   auto stats = doc.AddTable(4, 2, "stats");
   stats.AddHeader(0, 0, "Generation");
   stats.AddHeader(1, 0, "Profile");
   stats.AddHeader(2, 0, "Fitness");
   stats.AddHeader(3, 0, "Puzzle");
-  stats.GetCell(3,1) << UI::Table(3,3,"best_puzzle");
+  UI::Table best_puzzle(3,3,"best_puzzle");
+  best_puzzle.SetCSS("border-collapse", "collapse")
+    .SetCSS("border", "1px solid black");
+  stats.GetCell(3,1) << best_puzzle;
+
   
   pze::Sudoku puz;
   pop.Insert(puz, pop_size);
