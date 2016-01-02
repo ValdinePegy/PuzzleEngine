@@ -14,6 +14,27 @@ const int pop_size = 1000;
 const double mut_rate = 0.015;
 int update = 0;
 
+void DrawPuzzle(const pze::Sudoku & sudoku, UI::Table table)
+{
+  table.Resize(3,3);   // Make sure table is the correct size.
+  table.ClearCells();
+
+  for (int r = 0; r < 3; r++) {
+    for (int c = 0; c < 3; c++) {
+      int id0 = r*27+c*3;
+      table.GetCell(r,c) << sudoku.GetCellSymbol(id0) << "&nbsp;"
+                         << sudoku.GetCellSymbol(id0+1) << "&nbsp;"
+                         << sudoku.GetCellSymbol(id0+2) << "<br>"
+                         << sudoku.GetCellSymbol(id0+9) << "&nbsp;"
+                         << sudoku.GetCellSymbol(id0+10) << "&nbsp;"
+                         << sudoku.GetCellSymbol(id0+11) << "<br>"
+                         << sudoku.GetCellSymbol(id0+18) << "&nbsp;"
+                         << sudoku.GetCellSymbol(id0+19) << "&nbsp;"
+                         << sudoku.GetCellSymbol(id0+20);
+    }
+  }
+}
+
 void DoRunStep() {
   // Mutate existing population
   for (int i = 1; i < pop.GetSize(); i++) {
@@ -36,13 +57,15 @@ void DoRunStep() {
     stats << profile.GetLevel(i) << ":" << profile.GetCount(i) << " ";
   }
   stats.GetCell(2, 1).Clear() << pop[0].CalcSimpleFitness();
-
+  DrawPuzzle(pop[0], doc.Table("best_puzzle"));
+  
   // Move to the next generation.
   pop.Update();
   ++update;
 
   stats.Redraw();
 }
+
 
 extern "C" int main()
 {
@@ -57,10 +80,12 @@ extern "C" int main()
       else but.Label("Start");
     }, "Pause", "toggle_run");
   
-  auto stats = doc.AddTable(3, 2, "stats");
+  auto stats = doc.AddTable(4, 2, "stats");
   stats.AddHeader(0, 0, "Generation");
   stats.AddHeader(1, 0, "Profile");
   stats.AddHeader(2, 0, "Fitness");
+  stats.AddHeader(3, 0, "Puzzle");
+  stats.GetCell(3,1) << UI::Table(3,3,"best_puzzle");
   
   pze::Sudoku puz;
   pop.Insert(puz, pop_size);
