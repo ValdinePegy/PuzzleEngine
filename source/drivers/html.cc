@@ -22,15 +22,16 @@ void DrawPuzzle(const pze::Sudoku & sudoku, UI::Table table)
   for (int r = 0; r < 3; r++) {
     for (int c = 0; c < 3; c++) {
       int id0 = r*27+c*3;
-      table.GetCell(r,c) << sudoku.GetCellSymbol(id0) << "&nbsp;"
-                         << sudoku.GetCellSymbol(id0+1) << "&nbsp;"
-                         << sudoku.GetCellSymbol(id0+2) << "<br>"
-                         << sudoku.GetCellSymbol(id0+9) << "&nbsp;"
-                         << sudoku.GetCellSymbol(id0+10) << "&nbsp;"
-                         << sudoku.GetCellSymbol(id0+11) << "<br>"
-                         << sudoku.GetCellSymbol(id0+18) << "&nbsp;"
-                         << sudoku.GetCellSymbol(id0+19) << "&nbsp;"
-                         << sudoku.GetCellSymbol(id0+20);
+      table.GetCell(r,c) << "<tt> "
+                         << sudoku.GetCellSymbol(id0) << " "
+                         << sudoku.GetCellSymbol(id0+1) << " "
+                         << sudoku.GetCellSymbol(id0+2) << "   <br> "
+                         << sudoku.GetCellSymbol(id0+9) << " "
+                         << sudoku.GetCellSymbol(id0+10) << " "
+                         << sudoku.GetCellSymbol(id0+11) << "<br> "
+                         << sudoku.GetCellSymbol(id0+18) << " "
+                         << sudoku.GetCellSymbol(id0+19) << " "
+                         << sudoku.GetCellSymbol(id0+20) << "</tt>";
     }
   }
 }
