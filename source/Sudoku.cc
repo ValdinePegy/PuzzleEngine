@@ -10,6 +10,9 @@ namespace pze {
   constexpr int SudokuState::links[81][20];   // What other cells is each cell linked to?
   constexpr int SudokuState::next_opt[512];   // Given set of options, which is available next?
   constexpr int SudokuState::opts_count[512]; // Given set of options, how many are there?
+  constexpr int SudokuState::overlaps[54][3]; // Which cells are part of each overlap?
+  constexpr int SudokuState::square_overlaps[36][3];  // Which overlaps are in each square region?
+  constexpr int SudokuState::overlap_regions[54][2];  // Which regions are each overlap part of?
                                        
   // A method to clear out all of the solution info when starting a new solve attempt.
   void SudokuState::Clear()
