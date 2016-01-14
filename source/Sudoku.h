@@ -28,12 +28,21 @@ namespace pze {
 
   class SudokuState : public PuzzleState {
   private:
-    std::array<char,81> value;           // Known value for cells; -1 = unknown
-    std::array<uint32_t, 81> options;    // Options still available to each cell
-    const Sudoku * puzzle;               // Pointer back to original puzzle
+    static constexpr int NUM_STATES = 9;
+    static constexpr int NUM_ROWS = 9;
+    static constexpr int NUM_COLS = 9;
+    static constexpr int NUM_SQUARES = 9;
+    static constexpr int NUM_OVERLAPS = 54;
+    static constexpr int NUM_CELLS = NUM_ROWS * NUM_COLS;                  // 81
+    static constexpr int NUM_REGIONS = NUM_ROWS + NUM_COLS + NUM_SQUARES;  // 27
     
+
+    std::array<char,NUM_CELLS> value;         // Known value for cells; -1 = unknown
+    std::array<uint32_t, NUM_CELLS> options;  // Options still available to each cell
+    const Sudoku * puzzle;                    // Pointer back to original puzzle
+
     // "members" tracks which cell ids are members of each region.
-    static constexpr int members[27][9] = {
+    static constexpr int members[NUM_REGIONS][9] = {
       // Rows (Overlaps: 111000000, 000111000, 000000111)
       {  0,  1,  2,  3,  4,  5,  6,  7,  8 },  // Region 0  (Overlap with 18, 19, 20)
       {  9, 10, 11, 12, 13, 14, 15, 16, 17 },  // Region 1  (Overlap with 18, 19, 20)
@@ -69,7 +78,7 @@ namespace pze {
     };
     
     // "regions" tracks which regions each cell is a member of.
-    static constexpr int regions[81][3] = {
+    static constexpr int regions[NUM_CELLS][3] = {
       // { ROW, COLUMN, BOX }
       { 0,  9, 18 }, { 0, 10, 18 }, { 0, 11, 18 },  // Cells  0- 2
       { 0, 12, 19 }, { 0, 13, 19 }, { 0, 14, 19 },  // Cells  3- 5
@@ -103,7 +112,7 @@ namespace pze {
     };
 
     // Which *other* cells is each cell linked to by at least one region?
-    static constexpr int links[81][20] = {
+    static constexpr int links[NUM_CELLS][20] = {
       { 1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 18, 19, 20, 27, 36, 45, 54, 63, 72 },
       { 0,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 18, 19, 20, 28, 37, 46, 55, 64, 73 },
       { 0,  1,  3,  4,  5,  6,  7,  8,  9, 10, 11, 18, 19, 20, 29, 38, 47, 56, 65, 74 },
@@ -260,7 +269,7 @@ namespace pze {
     };
 
     // Which cells are in region overlaps (horizontal or vertical)?
-    static constexpr int overlaps[54][3] = {
+    static constexpr int overlaps[NUM_OVERLAPS][3] = {
       {  0,  1,  2 }, {  3,  4,  5 }, {  6,  7,  8 },  // Overlap sets  0,  1,  2 (Row 0)
       {  9, 10, 11 }, { 12, 13, 14 }, { 15, 16, 17 },  // Overlap sets  3,  4,  5 (Row 1)
       { 18, 19, 20 }, { 21, 22, 23 }, { 24, 25, 26 },  // Overlap sets  6,  7,  8 (Row 2)
@@ -283,7 +292,7 @@ namespace pze {
     };
 
     // Which overlaps are square regions made up from? (each square is listed twice).
-    static constexpr int square_overlaps[36][3] = {
+    static constexpr int square_overlaps[18][3] = {
       {  0,  3,  6 }, {  1,  4,  7 }, {  2,  5,  8 },
       {  9, 12, 15 }, { 10, 13, 16 }, { 11, 14, 17 },
       { 18, 21, 24 }, { 19, 22, 25 }, { 20, 23, 26 },
@@ -294,7 +303,7 @@ namespace pze {
     };
 
     // Which region is each overlap associated with? (row/col first, then square)
-    static constexpr int overlap_regions[54][2] = {
+    static constexpr int overlap_regions[NUM_OVERLAPS][2] = {
       {  0, 18 }, {  0, 19 }, {  0, 20 },
       {  1, 18 }, {  1, 19 }, {  1, 20 },
       {  2, 18 }, {  2, 19 }, {  2, 20 },

@@ -5,14 +5,14 @@ namespace pze {
   ////////////////////
   //  SudokuState
 
-  constexpr int SudokuState::members[27][9];  // What cells are part of each region?
-  constexpr int SudokuState::regions[81][3];  // What regions is each cell part of?
-  constexpr int SudokuState::links[81][20];   // What other cells is each cell linked to?
-  constexpr int SudokuState::next_opt[512];   // Given set of options, which is available next?
-  constexpr int SudokuState::opts_count[512]; // Given set of options, how many are there?
-  constexpr int SudokuState::overlaps[54][3]; // Which cells are part of each overlap?
-  constexpr int SudokuState::square_overlaps[36][3];  // Which overlaps are in each square region?
-  constexpr int SudokuState::overlap_regions[54][2];  // Which regions are each overlap part of?
+  constexpr int SudokuState::members[NUM_REGIONS][9];          // Cells in each region
+  constexpr int SudokuState::regions[NUM_CELLS][3];            // Regions for each cell
+  constexpr int SudokuState::links[NUM_CELLS][20];             // Other cells across regions
+  constexpr int SudokuState::next_opt[512];                    // Which option is next?
+  constexpr int SudokuState::opts_count[512];                  // How many options are there?
+  constexpr int SudokuState::overlaps[NUM_OVERLAPS][3];        // Cells in each overlap
+  constexpr int SudokuState::square_overlaps[18][3];           // Overlaps in each square region
+  constexpr int SudokuState::overlap_regions[NUM_OVERLAPS][2]; // Regions for each overlap
                                        
   // A method to clear out all of the solution info when starting a new solve attempt.
   void SudokuState::Clear()
@@ -25,8 +25,8 @@ namespace pze {
   // Return true/false based on whether progress was made toward solving the puzzle.
   void SudokuState::Set(int cell, int state)
   {
-    emp_assert(cell >= 0 && cell < 81);    // Make sure cell is in a valid range.
-    emp_assert(state >= 0 && state < 9);   // Make sure state is in a valid range.
+    emp_assert(cell >= 0 && cell < NUM_CELLS);    // Make sure cell is in a valid range.
+    emp_assert(state >= 0 && state < NUM_STATES); // Make sure state is in a valid range.
 
     if (value[cell] == state) return;      // If state is already set, SKIP!
 
@@ -41,8 +41,8 @@ namespace pze {
   // Operate on a "move" object.
   void SudokuState::Move(const PuzzleMove & move)
   {
-    emp_assert(move.GetID() >= 0 && move.GetID() < 81, move.GetID());
-    emp_assert(move.GetState() >= 0 && move.GetState() < 9, move.GetState());
+    emp_assert(move.GetID() >= 0 && move.GetID() < NUM_CELLS, move.GetID());
+    emp_assert(move.GetState() >= 0 && move.GetState() < NUM_STATES, move.GetState());
     
     switch (move.GetType()) {
     case PuzzleMove::SET_STATE:   Set(move.GetID(), move.GetState());   break;
@@ -54,7 +54,7 @@ namespace pze {
   
 
   // Print the current state of the puzzle, including all options available.
-  void SudokuState::Print(const std::array<char,9> & symbols, std::ostream & out)
+  void SudokuState::Print(const std::array<char,NUM_STATES> & symbols, std::ostream & out)
   {
     out << " +-----------------------+-----------------------+-----------------------+"
         << std::endl;;
@@ -98,10 +98,10 @@ namespace pze {
 
   bool SudokuState::ForceSolve(int start)
   {
-    emp_assert(start >= 0 && start <= 81);
+    emp_assert(start >= 0 && start <= NUM_CELLS);
     
     // Advance the start position until we find a cell with a choice to be made.
-    while (start < 81) {
+    while (start < NUM_CELLS) {
       const int opt_count = CountOptions(start);
       if (opt_count == 0 && !IsSet(start)) return false;      // No option & unlocked -> backtrack!
       else if (opt_count == 1) Set( start, FindNext(start) ); // One option -> lock it!
@@ -114,7 +114,7 @@ namespace pze {
     if (start == 81) return true;
     
     // Step through possibilities of first cell with multiple options.
-    for (int i = 0; i < 9; i++) {
+    for (int i = 0; i < NUM_STATES; i++) {
       if (HasOption(start,i) == false) continue;  // Skip values that are not an option.
       
       SudokuState backup_state(*this);    // backup the current state.
@@ -134,7 +134,7 @@ namespace pze {
     std::vector<PuzzleMove> moves;
 
     // For each cell, check if it has only one state left.
-    for (int i = 0; i < 81; i++) {
+    for (int i = 0; i < NUM_CELLS; i++) {
       if (CountOptions(i) == 1) {
         // Find last value.
         moves.emplace_back(PuzzleMove::SET_STATE, i, FindNext(i));
@@ -178,6 +178,11 @@ namespace pze {
   std::vector<PuzzleMove> SudokuState::Solve_FindRegionOverlap()
   {
     std::vector<PuzzleMove> moves;
+
+    // std::array<uint32_t, NUM_OVERLAPS> overlap_options;
+    // for (int i = 0; i < 54; i++) {
+    // }
+
     return moves;
   }
     
