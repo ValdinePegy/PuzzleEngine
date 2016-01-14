@@ -179,10 +179,44 @@ namespace pze {
   {
     std::vector<PuzzleMove> moves;
 
-    // std::array<uint32_t, NUM_OVERLAPS> overlap_options;
-    // for (int i = 0; i < 54; i++) {
-    // }
+    // Determine what options are available in each overlap region.
+    std::array<uint32_t, NUM_OVERLAPS> overlap_options;
+    for (int i = 0; i < 54; i++) {
+      overlap_options[i] =
+        options[overlaps[i][0]] | options[overlaps[i][1]] | options[overlaps[i][2]];
+    }
 
+    // If an option is available in only one overlap, than it must be there
+    // (and cannot be elsewhere in the OTHER region that shares that overlap.)
+
+    // Start with row/col overlaps, which are in groups of three.
+    for (int i = 0; i < NUM_OVERLAPS; i += 3) {
+      uint32_t single_opts =
+        (overlap_options[i] ^ overlap_options[i+1] ^ overlap_options[i+2]) &
+        ~(overlap_options[i] & overlap_options[i+1] & overlap_options[i+2]);
+
+      if (!single_opts) continue;
+
+      // If we made it this far, there is a move. Find the SQUARE region for this overlap.
+      const int square_id = overlap_regions[i][1];
+      for (int oid : square_overlaps[square_id]) {
+        if (oid == i) continue;
+        uint32_t extra_opts = single_opts & overlap_options[oid];
+
+        // We found options to block!  Lets step through all of the cells and options.
+        while (extra_opts) {
+          const int opt_id = next_opt[extra_opts];  // Determine this option.
+          extra_opts &= ~(1 << opt_id);             // Remove this option for future checks.
+          for (int cell_id : overlaps[oid]) {
+            if (HasOption(cell_id, opt_id)) {
+              moves.emplace_back(PuzzleMove::BLOCK_STATE, cell_id, opt_id);
+            }
+          }
+        }
+        
+      }
+    }  
+    
     return moves;
   }
     
