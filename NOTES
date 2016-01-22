@@ -2,11 +2,10 @@ Next steps:
 * Finish sudoku setup
   - Setup warning system for incorrect loads
 
-* Build EA to evolve simple puzzles
-* Add more sudoku rules (2-6)
-* Indenitfy a full set of objectives and limited resources
-* Build a lexicase selection
+* Add more sudoku rules (3-6)
 * Hook into Empirical for user interface
+* Idenitfy a full set of objectives and limited resources
+* Build a lexicase selection
 
 
 Fixes needed:
