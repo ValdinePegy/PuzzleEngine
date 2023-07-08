@@ -1,8 +1,8 @@
 # Flags to use regardless of compiler
-CFLAGS_all := -Wall -Wno-unused-function -std=c++11 -I../Empirical/ -I./
+CFLAGS_all := -Wall -Wno-unused-function -std=c++20 -IEmpirical/include/emp/ -I./
 
 # Native compiler information
-CXX_nat := g++-4.8
+CXX_nat := g++
 #CFLAGS_nat := -g $(CFLAGS_all)    # Debug mode
 #CFLAGS_nat := -O3 $(CFLAGS_all)   # Optimized mode
 CFLAGS_nat := -DNDEBUG -O3 $(CFLAGS_all)   # Extreme Optimized mode
@@ -23,12 +23,12 @@ all: PuzzleEngine PuzzleEngine.js
 
 SRC	:= source/Sudoku.cc
 
-PuzzleEngine:	$(SRC) source/drivers/command_line.cc
-	$(CXX_nat) $(CFLAGS_nat) $(SRC) source/drivers/command_line.cc -o PuzzleEngine
+PuzzleEngine:	source/drivers/command_line.cc
+	$(CXX_nat) $(CFLAGS_nat) source/drivers/command_line.cc -o PuzzleEngine
 	@echo To build the web version use: make web
 
-PuzzleEngine.js: $(SRC) source/drivers/html.cc
-	$(CXX_web) $(CFLAGS_web) $(SRC) source/drivers/html.cc -o PuzzleEngine.js
+PuzzleEngine.js: source/drivers/html.cc
+	$(CXX_web) $(CFLAGS_web) source/drivers/html.cc -o PuzzleEngine.js
 
 clean:
 	rm -f PuzzleEngine PuzzleEngine.js *.js.map *~ source/*.o source/*/*.o
