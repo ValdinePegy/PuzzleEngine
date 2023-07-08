@@ -42,8 +42,8 @@ int main()
 {
   // pze::Sudoku puz("puzzles/blank.puz");
   // pze::Sudoku puz("puzzles/test2.puz");
-  // pze::Sudoku puz("puzzles/wikipedia.puz");
-  pze::Sudoku puz("puzzles/letters.puz");
+  pze::Sudoku puz("puzzles/wikipedia.puz");
+  // pze::Sudoku puz("puzzles/letters.puz");
   emp::Random random;
 
   //std::ofstream out("out.log");
