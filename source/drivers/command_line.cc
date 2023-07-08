@@ -7,34 +7,34 @@
 #include <iostream>
 #include <fstream>
 #include "../Sudoku.h"
-#include "EA/Population.h"
+//#include "Evolve/Population.h"
 
 void DoRun(const pze::Sudoku & puz, emp::Random & random,
            int pop_size, int num_updates, double mut_rate, std::ostream & out_log)
 {
-  out_log << pop_size 
-          << ", " << num_updates
-          << ", " << mut_rate;
-  
-  emp::EA::Population<pze::Sudoku> pop;
-  pop.Insert(puz, pop_size);
+  //out_log << pop_size 
+  //        << ", " << num_updates
+  //        << ", " << mut_rate;
+  //
+  //emp::EA::Population<pze::Sudoku> pop;
+  //pop.Insert(puz, pop_size);
 
-  for (int update = 0; update < num_updates; update++) {
-    for (int i = 1; i < pop.GetSize(); i++) {
-      pop[i].MutateStart(random, mut_rate);
-    }
+  //for (int update = 0; update < num_updates; update++) {
+  //  for (int i = 1; i < pop.GetSize(); i++) {
+  //    pop[i].MutateStart(random, mut_rate);
+  //  }
 
-    pop.EliteSelect( [](pze::Sudoku* s){return s->CalcSimpleFitness();}, 1, 1);
-    pop.TournamentSelect( [](pze::Sudoku* s){return s->CalcSimpleFitness();},
-                          4, random, pop_size-1);
-    std::cout << update << " : " << pop[0].CalcSimpleFitness() << std::endl;
-    pop.Update();
-  }
+  //  pop.EliteSelect( [](pze::Sudoku* s){return s->CalcSimpleFitness();}, 1, 1);
+  //  pop.TournamentSelect( [](pze::Sudoku* s){return s->CalcSimpleFitness();},
+  //                        4, random, pop_size-1);
+  //  std::cout << update << " : " << pop[0].CalcSimpleFitness() << std::endl;
+  //  pop.Update();
+  //}
 
-  out_log << ", " << pop[0].CalcSimpleFitness()
-          << std::endl;
-  pop[0].Print();
-  pop[0].CalcProfile().Print();
+  //out_log << ", " << pop[0].CalcSimpleFitness()
+  //        << std::endl;
+  //pop[0].Print();
+  //pop[0].CalcProfile().Print();
   
 }
 
@@ -46,22 +46,22 @@ int main()
   pze::Sudoku puz("puzzles/letters.puz");
   emp::Random random;
 
-  std::ofstream out("out.log");
+  //std::ofstream out("out.log");
 
-  DoRun(puz, random, 1000, 100, 0.015, out);
+  //DoRun(puz, random, 1000, 100, 0.015, out);
 
-  exit(0);
+  //exit(0);
 
-  int reps = 10;
-  double mut_rates[] = { 0.002, 0.004, 0.0075, 0.015, 0.03, 0.06 };
-  
-  for (double m : mut_rates) {
-    for (int r=0; r < reps; r++) {
-      DoRun(puz, random, 100, 1000, m, out);
-    }
-  }
-  
-  exit(0);
+  //int reps = 10;
+  //double mut_rates[] = { 0.002, 0.004, 0.0075, 0.015, 0.03, 0.06 };
+  //
+  //for (double m : mut_rates) {
+  //  for (int r=0; r < reps; r++) {
+  //    DoRun(puz, random, 100, 1000, m, out);
+  //  }
+  //}
+  //
+  //exit(0);
   
   
   // puz.Shuffle(random);
