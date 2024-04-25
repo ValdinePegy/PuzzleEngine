@@ -17,6 +17,7 @@
 #include <istream>
 #include <set>
 #include <vector>
+#include <map>
 #include "base/assert.hpp"
 #include "math/Random.hpp"
 #include "math/random_utils.hpp"
@@ -200,7 +201,7 @@ namespace pze {
       };
       
       // Given a binary representation of options, which bit position is the first available?
-      static constexpr int next_opt[512] = {
+      static constexpr int next_opt[512] = {  // remember '0' is unavailable while '1' is available 
         -1, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
         4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
         5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
@@ -236,7 +237,7 @@ namespace pze {
       };
 
       // Given a binary representation of state options, how many are available?
-      static constexpr int opts_count[512] = {
+      static constexpr int opts_count[512] = {  // binary representation of 9 bits since 2^9 is 512 i.e from 0-511
         0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4,
         1, 2, 2, 3, 2, 3, 3, 4, 2, 3, 3, 4, 3, 4, 4, 5,
         1, 2, 2, 3, 2, 3, 3, 4, 2, 3, 3, 4, 3, 4, 4, 5,
@@ -373,11 +374,11 @@ namespace pze {
       }
       bool IsSet(int cell) const { return value[cell] != -1; }
       bool IsSolved() {
-        for (uint32_t o : options) if (o) return false;
+        for (uint32_t o : options) if (o) return false;  // (o) checks if the value of o is non-zero
         return true;
       }
       
-      // A method to clear out all of the solution info when starting a new solve attempt.
+      // A method to clear out all of the solution info when starting a new solve attempt. 
       void Clear() override{
         value.fill(-1);
         options.fill(511);  // Set all options to one.  or 0b111111111
@@ -490,7 +491,7 @@ namespace pze {
         return false;
       }
 
-      
+       
       // More human-focused solving techniques:
 
       // If there's only one state a cell can be, pick it!
@@ -548,7 +549,7 @@ namespace pze {
             options[overlaps[i][0]] | options[overlaps[i][1]] | options[overlaps[i][2]];
         }
 
-        // If an option is available in only one overlap, than it must be there
+        // If an option is available in only one overlap, then it must be there
         // (and cannot be elsewhere in the OTHER region that shares that overlap.)
 
         // Start with row/col overlaps, which are in groups of three.
@@ -577,27 +578,108 @@ namespace pze {
             }
             
           }
-        }  
-        
-        return moves;
-      }
-      
-      // If K cells are all limited to the same K states, eliminate those states
-      // from all other cells in the same region.
-      std::vector<PuzzleMove> Solve_FindLimitedCells(){
-        std::vector<PuzzleMove> moves;
-        return moves;
-      }
-      
-      // Eliminate all other possibilities from K cells if they are the only
-      // ones that can possess K states in a single region.
-      std::vector<PuzzleMove> Solve_FindLimitedStates(){
-        std::vector<PuzzleMove> moves;
+        }    
         return moves;
       }
 
+      // If K cells are all limited to the same K states, eliminate those states
+      // from all other cells in the same region.
+      std::vector<PuzzleMove> Solve_FindLimitedCells(){  
+        std::vector<PuzzleMove> moves;
+        // Iterate through all regions (rows, columns, and boxes)
+        for (int region = 0; region < NUM_REGIONS; ++region) {
+          for(int pos = 0; pos < 9; ++pos){  // To loop over all the cells in each region
+            uint32_t first_option = GetOptions(members[region][pos]); 
+            int first_count_opts = CountOptions(members[region][pos]);
+            int count = first_count_opts; // to keep track of all the assigned positions
+            std::vector<int>matching_id;  // stores matching options
+            // Iterate through each cell in the region
+            for (const int cell_id : members[region]) {
+              uint32_t cell_options = GetOptions(cell_id);     
+              if ((cell_options == first_option) && count != 0){
+                  matching_id.push_back(cell_id);
+                  count -= 1;
+                  continue;
+              }
+            }
+              
+            if (count == 0){  // we have found all the available options, block the rest
+              for (const int cell_id : members[region]) {
+                uint32_t cell_options = GetOptions(cell_id);   
+                if(std::find(matching_id.begin(), matching_id.end(), cell_id) != matching_id.end()){  // check if the element is present in the vector
+                    continue;
+                }
+                else{
+                  options[cell_id] = ~first_option & cell_options;
+                }
+              }     
+            }
+          }
+        }
+        return moves;
+      }
+      
+      
+      // Eliminate all other possibilities from K cells if they are the only
+      // ones that can possess K states in a single region.    
+      std::vector<PuzzleMove> Solve_FindLimitedStates(){
+        std::vector<PuzzleMove> moves;
+        std::map<int, std::vector<int>> numberLocations;
+        for (int num = 1; num <= 9; ++num) {
+          for (int region = 0; region < NUM_REGIONS; ++region) {
+            for (const int cell_id : members[region]) {
+              uint32_t cell_options = GetOptions(cell_id);  // uint32_t type not same as int in my map
+              if ((1 << (num-1)) & cell_options ){
+              //if (cell_value == num) {
+                numberLocations[num].push_back(cell_id); // key = numbers(1-9), value = vector of locations
+              }
+            }
+          }
+        }
+        // check if vectors are equal
+        // if equal, eliminate those options from other cells
+        
+        // Create a map to store vectors of equal cells
+        std::map<std::vector<int>, std::vector<int>> equalVectorsMap; // the key is a vector that contains the equal cell_ids, the value is a vector of the associated numbers
+        std::unordered_set<std::vector<int>> visitedVectors;  // used so that we only process each vector once and avoid redundant iteration
+
+        // Find vectors that are equal in the numberLocations map
+        for (const auto& entry : numberLocations) {
+          const std::vector<int>& cell_ids = entry.second;
+          if (visitedVectors.find(cell_ids) == visitedVectors.end()) { // checks whether a vector "cell_ids" is already in the visitedVectors set
+            equalVectorsMap[cell_ids].push_back(entry.first); // do this if it is not in the set
+            visitedVectors.insert(cell_ids);  // used to avoid redundant iteration
+          }
+          // fixe this ? 
+        }
+
+        // Block cells associated with equal vectors(containing cell_ids) from other numbers
+        for (const auto& entry : equalVectorsMap) {
+          const std::vector<int>& cell_ids = entry.first;
+          const std::vector<int>& associatedNumbers = entry.second;
+
+          for (int num : associatedNumbers) { 
+            for (int cell_id : cell_ids) { 
+              uint32_t cell_options = GetOptions(cell_id);  // get the options for that cell
+              for (int other_num = 1; other_num <= 9; ++other_num) {
+                if (std::find(associatedNumbers.begin(), associatedNumbers.end(), other_num) == associatedNumbers.end() ) { // check whether other_num is not present in the associatedNumbers vector(since it is equal to end, it is not found)
+                  /// algorithm remove is used to move the cell_ids to be eliminated from the vector at the end of the vector(without changing the order of the vector) and erase is used to delete them. 
+                  numberLocations[other_num].erase(std::remove(numberLocations[other_num].begin(), numberLocations[other_num].end(), cell_id), numberLocations[other_num].end());
+                  options[cell_id] = ~(1 << (other_num-1)) & cell_options;
+                }
+              }
+            }
+          }
+        }
+        //options[cell_id] = ~first_option & cell_options;
+        //options[cell_id] = ~(1 << (other_num-1)) & cell_options;
+
+        return moves;
+
+      }                    
+
       // If there are X rows (cols) where a certain state can only be in one of 
-      // X cols (rows), then no other row in this cols can be that state.
+      // X cols (rows), then no other row in this cols can be that state.     // do this
       std::vector<PuzzleMove> Solve_FindSwordfish(){
         std::vector<PuzzleMove> moves;
         return moves;
@@ -649,7 +731,7 @@ namespace pze {
       // Test possible states for this cell in random order.
       emp::vector<size_t> states( emp::GetPermutation(random, 9) );
 
-      // @CAO ACTUALLY DO TESTS HERE!!
+      // @CAO ACTUALLY DO TESTS HERE!!     
       
       // If all states have failed, return false (this is a dead-end)
       return false;

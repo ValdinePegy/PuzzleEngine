@@ -42,9 +42,9 @@ int main()
 {
   // pze::Sudoku puz("puzzles/blank.puz");
   // pze::Sudoku puz("puzzles/test2.puz");
-  pze::Sudoku puz("puzzles/wikipedia.puz");
+    //pze::Sudoku puz("puzzles/wikipedia.puz");
   // pze::Sudoku puz("puzzles/letters.puz");
-  emp::Random random;
+    //emp::Random random;
 
   //std::ofstream out("out.log");
 
@@ -67,26 +67,36 @@ int main()
   // puz.Shuffle(random);
   // puz.Print();
 
-  auto state = puz.GetState();
+    //auto state = puz.GetState();
   // state.ForceSolve();
 
+  // state.Print();
+  // auto moves = state.Solve_FindLastCellState();
+  // std::cout << "moves = " << moves.size() << std::endl;
+  // state.OK();
+
+  // state.Move(moves);
+
+  // state.Print();
+  // moves = state.Solve_FindLastCellState();
+  // std::cout << "moves = " << moves.size() << std::endl;
+  // state.OK();
+
+
+  // auto & profile = puz.CalcProfile();
+  // for (int i = 0; i < profile.GetSize(); i++) {
+  //   std::cout << profile.GetLevel(i) << " : " << profile.GetCount(i) << std::endl;
+  // }
+
+  // puz.Print();
+
+  pze::Sudoku puz("puzzles/test_find_limited_cells.puz");
+  emp::Random random;
+
+  auto state = puz.GetState();
   state.Print();
-  auto moves = state.Solve_FindLastCellState();
+  auto moves = state.Solve_FindLimitedCells();
   std::cout << "moves = " << moves.size() << std::endl;
   state.OK();
-
-  state.Move(moves);
-
   state.Print();
-  moves = state.Solve_FindLastCellState();
-  std::cout << "moves = " << moves.size() << std::endl;
-  state.OK();
-
-
-  auto & profile = puz.CalcProfile();
-  for (int i = 0; i < profile.GetSize(); i++) {
-    std::cout << profile.GetLevel(i) << " : " << profile.GetCount(i) << std::endl;
-  }
-
-  puz.Print();
 }
